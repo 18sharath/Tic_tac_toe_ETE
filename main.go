@@ -1,9 +1,21 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"math/rand"
+	"time"
+)	
 
 var board [3][3]string
+var mode int
 
+func initBoard(){
+	for i:=0;i<3;i++{
+		for j:=0;j<3;j++{
+			board[i][j]=""
+		}
+	}
+}
 
 func printBoard() {
 	fmt.Println("Current Board")
@@ -54,28 +66,65 @@ func drawConditionCheck() bool{
 	return true
 }
 
+func Botmove(){
+	for{
+		row:=rand.Intn(3)
+		col:=rand.Intn(3)
+
+		if board[row][col]==""{
+			fmt.Println("Bot played:",row,col)
+			board[row][col]="O"
+			break
+		}
+
+	}
+}
+
+
+func PlayerMove(player string){
+	var row,col int
+	for{
+		fmt.Printf("Player %s - Enter row and column:",player)
+		fmt.Scan(&row, &col)
+
+		if row<0 || row >=3 || col<0 || col>=3 || board[row][col]!=""{
+			fmt.Println("Invalid move, try again!")
+			continue
+		}
+		board[row][col] = player
+			break
+	}
+}
+
+
 func main(){	
 	player:="X"
+	rand.Seed(time.Now().UnixNano())
+	initBoard()
+
+	fmt.Println("Choose Mode:")
+	fmt.Println("1. Player vs Player")
+	fmt.Println("2. Player vs Bot")
+	fmt.Scan(&mode)
 
 	for{
 
 		printBoard()
-		var row,col int
-
-		fmt.Printf("Player %s Enter row and column:",player)
-		fmt.Scan(&row, &col)
-
-		if row<0 || col <0 || row >2 || col>2 || board[row][col]!=""{
-			fmt.Println("Invalid move! Try again ")
-			continue
+	
+		if mode==1|| (mode==2 && player=="X"){
+			PlayerMove(player)
+		}else{
+			Botmove()
 		}
-
-		board[row][col]=player
 
 		winner:=checkwinner()
 		if winner != "" {
 			printBoard()
-			fmt.Printf("\n Player %s wins!\n", winner)
+			if mode==2&&winner=="O"{
+				fmt.Println("Bot wins")
+			}else{
+				fmt.Printf("\n Player %s wins!\n", winner)
+			}
 			break
 		}
 		if drawConditionCheck() {
@@ -93,5 +142,4 @@ func main(){
 
 	}
 }
-
 
