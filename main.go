@@ -66,14 +66,14 @@ func drawConditionCheck() bool{
 	return true
 }
 
-func Botmove(){
+func Botmove(Bot string){
 	for{
 		row:=rand.Intn(3)
 		col:=rand.Intn(3)
 
 		if board[row][col]==""{
-			fmt.Println("Bot played:",row,col)
-			board[row][col]="O"
+			fmt.Printf("Bot %s played:[%v %v]\n",Bot,row,col)
+			board[row][col]=Bot
 			break
 		}
 
@@ -99,12 +99,13 @@ func PlayerMove(player string){
 
 func main(){	
 	player:="X"
-	rand.Seed(time.Now().UnixNano())
+	rand.New(rand.NewSource(time.Now().UnixNano()))
 	initBoard()
 
 	fmt.Println("Choose Mode:")
 	fmt.Println("1. Player vs Player")
 	fmt.Println("2. Player vs Bot")
+	fmt.Println("3. Bot vs Bot")
 	fmt.Scan(&mode)
 
 	for{
@@ -114,7 +115,7 @@ func main(){
 		if mode==1|| (mode==2 && player=="X"){
 			PlayerMove(player)
 		}else{
-			Botmove()
+			Botmove(player)
 		}
 
 		winner:=checkwinner()
