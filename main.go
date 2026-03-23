@@ -8,6 +8,7 @@ import (
 
 var board [3][3]string
 var mode int
+var difficulty int
 
 func initBoard(){
 	for i:=0;i<3;i++{
@@ -23,7 +24,7 @@ func printBoard() {
 	for i:=0;i<3;i++{
 		for j:=0;j<3;j++{
 			if board[i][j]==""{
-				fmt.Print("-")
+				fmt.Print("- ")
 			}else{
 				fmt.Print(board[i][j]+" ")
 			}
@@ -96,6 +97,75 @@ func PlayerMove(player string){
 	}
 }
 
+func defensiveMove(bot string) {
+	opponent := "X"
+	if bot == "X" {
+		opponent = "O"
+	}
+
+	// checking for opponent win
+	for i := 0; i < 3; i++ {
+		for j := 0; j < 3; j++ {
+			if board[i][j] == "" {
+				board[i][j] = opponent
+
+				if checkwinner() == opponent {
+					board[i][j] = bot
+					fmt.Printf("Defensive Bot %s played: [%d %d]\n", bot, i, j)
+					return
+				}
+
+				board[i][j] = ""
+			}
+		}
+	}
+
+	Botmove(bot)
+}
+
+func offensiveMove(bot string) {
+	opponent := "X"
+	if bot == "X" {
+		opponent = "O"
+	}
+
+	 // checking for current move for its 
+	for i := 0; i < 3; i++ {
+		for j := 0; j < 3; j++ {
+			if board[i][j] == "" {
+				board[i][j] = bot
+
+				if checkwinner() == bot {
+					fmt.Printf("Offensive Bot %s played: [%d %d]\n", bot, i, j)
+					return
+				}
+
+				board[i][j] = ""
+			}
+		}
+	}
+
+	// checking for the opponent move for draw condition
+	for i := 0; i < 3; i++ {
+		for j := 0; j < 3; j++ {
+			if board[i][j] == "" {
+				board[i][j] = opponent
+
+				if checkwinner() == opponent {
+					board[i][j] = bot
+					fmt.Printf("Offensive Bot %s blocked: [%d %d]\n", bot, i, j)
+					return
+				}
+
+				board[i][j] = ""
+			}
+		}
+	}
+
+	
+	Botmove(bot)
+}
+
 
 func main(){	
 	player:="X"
@@ -107,6 +177,13 @@ func main(){
 	fmt.Println("2. Player vs Bot")
 	fmt.Println("3. Bot vs Bot")
 	fmt.Scan(&mode)
+	if mode!= 1{
+	fmt.Println("Choose Bot Difficulty:")
+	fmt.Println("1. Random")
+	fmt.Println("2. Defensive")
+	fmt.Println("3. Offensive")
+	fmt.Scan(&difficulty)
+	}
 
 	for{
 
@@ -115,7 +192,16 @@ func main(){
 		if mode==1|| (mode==2 && player=="X"){
 			PlayerMove(player)
 		}else{
+		switch difficulty{
+		case 1:
 			Botmove(player)
+		case 2:
+			defensiveMove(player)
+		case 3:
+			offensiveMove(player)
+		default:
+			fmt.Println("Please select valid choice")
+		}
 		}
 
 		winner:=checkwinner()
