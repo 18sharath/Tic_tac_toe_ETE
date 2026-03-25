@@ -20,6 +20,7 @@ type MoveRequest struct {
     Col int `json:"col"`
 }
 
+
 func CreateGameHandler(w http.ResponseWriter, r *http.Request) {
     if r.Method != http.MethodPost {
         w.WriteHeader(http.StatusMethodNotAllowed)
@@ -32,6 +33,23 @@ func CreateGameHandler(w http.ResponseWriter, r *http.Request) {
     id := uuid.New().String()
     g := game.NewGame(id, req.Mode, req.Difficulty)
 
+	if g.Mode == 3 {
+    	for {
+			g.BotMove()
+			winner := g.CheckWinner();
+			if winner != "" {
+				g.Winner = winner
+				break
+			}
+
+			if g.CheckDraw() {
+				g.Draw = true
+				break
+			}
+
+			g.TogglePlayer()
+		}
+  	}
     store.Games[id] = g
     json.NewEncoder(w).Encode(g)
 }
@@ -56,7 +74,12 @@ func GameHandler(w http.ResponseWriter, r *http.Request) {
         var move MoveRequest
         json.NewDecoder(r.Body).Decode(&move)
 
-        g.MakeMove(move.Row, move.Col)
+        
+		err := g.MakeMove(move.Row, move.Col)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 
         if winner := g.CheckWinner(); winner != "" {
             g.Winner = winner
@@ -76,25 +99,6 @@ func GameHandler(w http.ResponseWriter, r *http.Request) {
         if g.Mode == 2 && g.Player == "O" {
             g.BotMove()
             g.TogglePlayer()
-        }
-
-// Bot vs Bot
-        if g.Mode == 3 {
-            for !g.IsGameOver() {
-                g.BotMove()
-
-            if winner := g.CheckWinner(); winner != "" {
-                g.Winner = winner
-                break
-            }
-
-            if g.CheckDraw() {
-                g.Draw = true
-                break
-            }
-
-            g.TogglePlayer()
-            }
         }
 
         if winner := g.CheckWinner(); winner != "" {

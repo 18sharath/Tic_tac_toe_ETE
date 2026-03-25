@@ -1,5 +1,5 @@
 package game
-
+import "fmt"
 type Game struct {
     ID         string      `json:"id"`
     Board      [3][3]string`json:"board"`
@@ -37,11 +37,21 @@ func (g *Game) OtherPlayer() string {
     return "X"
 }
 
-func (g *Game) MakeMove(row, col int) {
-    if g.Board[row][col] == "" {
-        g.Board[row][col] = g.Player
+func (g *Game) MakeMove(row, col int) error{
+    
+ if row < 0 || row > 2 || col < 0 || col > 2 {
+        return fmt.Errorf("invalid board position")
     }
+
+    if g.Board[row][col] != "" {
+        return fmt.Errorf("cell already occupied")
+    }
+	
+    g.Board[row][col] = g.Player
+    return nil
+
 }
+
 
 func (g *Game) IsGameOver() bool {
     return g.Winner != "" || g.Draw
