@@ -50,7 +50,10 @@ func CreateGameHandler(w http.ResponseWriter, r *http.Request) {
 			g.TogglePlayer()
 		}
   	}
+    store.Mutex.Lock()
     store.Games[id] = g
+    store.Mutex.Unlock()
+    store.SaveGame()
     json.NewEncoder(w).Encode(g)
 }
 
@@ -95,7 +98,7 @@ func GameHandler(w http.ResponseWriter, r *http.Request) {
 
        g.TogglePlayer()
 
-// Player vs Bot
+       // Player vs Bot
         if g.Mode == 2 && g.Player == "O" {
             g.BotMove()
             g.TogglePlayer()
@@ -108,7 +111,7 @@ func GameHandler(w http.ResponseWriter, r *http.Request) {
         if g.CheckDraw() {
             g.Draw = true
         }
-
+        store.SaveGame()
         json.NewEncoder(w).Encode(g)
     }
 }
