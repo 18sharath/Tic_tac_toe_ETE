@@ -113,5 +113,17 @@ func GameHandler(w http.ResponseWriter, r *http.Request) {
         }
         store.SaveGame()
         json.NewEncoder(w).Encode(g)
+
+    case http.MethodDelete:
+        store.Mutex.Lock()
+        delete(store.Games,id)
+        store.Mutex.Unlock()
+
+        store.SaveGame()
+        w.WriteHeader(http.StatusNoContent)
+    
+    default:
+        w.WriteHeader(http.StatusMethodNotAllowed)
     }
+    
 }
