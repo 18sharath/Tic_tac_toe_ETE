@@ -1,129 +1,186 @@
 package handlers
 
 import (
-    "encoding/json"
-    "net/http"
-    "strings"
+	"encoding/json"
+	"net/http"
 
-    "github.com/google/uuid"
-    "tic_tac_toe/game"
-    "tic_tac_toe/store"
+	"tic_tac_toe/game"
+	"tic_tac_toe/store"
+
+	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 )
 
 type CreateGameRequest struct {
-    Mode       int `json:"mode"`
-    Difficulty int `json:"difficulty"`
+	Mode       game.Mode       `json:"mode"`
+	Difficulty game.Difficulty `json:"difficulty"`
+	BoardSize  int             `json:"boardSize"`
 }
 
-type MoveRequest struct {
-    Row int `json:"row"`
-    Col int `json:"col"`
+type MoveRequest struct{
+	Player string `json:"player"`
+	Row int `json:"row"`
+	Col int `json:"col"`
 }
 
+type Handler struct {
+	store store.Store
+}
 
-func CreateGameHandler(w http.ResponseWriter, r *http.Request) {
-    if r.Method != http.MethodPost {
-        w.WriteHeader(http.StatusMethodNotAllowed)
-        return
-    }
+func NewHandler(s store.Store) *Handler {
+	return &Handler{store: s}
+}
 
-    var req CreateGameRequest
-    json.NewDecoder(r.Body).Decode(&req)
+func (h *Handler) CreateGameHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
 
-    id := uuid.New().String()
-    g := game.NewGame(id, req.Mode, req.Difficulty)
+	var req CreateGameRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "invalid request body", http.StatusBadRequest)
+		return
+	}
 
-	if g.Mode == 3 {
-    	for {
-			g.BotMove()
-			winner := g.CheckWinner();
-			if winner != "" {
-				g.Winner = winner
+	if req.BoardSize < 0 {
+		req.BoardSize = 3
+	}
+
+	id := uuid.New().String()
+
+	var xMover game.Mover
+	var oMover game.Mover
+
+	switch req.Mode {
+	case game.ModeHumanVsHuman:
+		xMover = nil
+		oMover = nil
+
+	case game.ModeHumanVsBot:
+		xMover = nil
+		oMover = game.NewBotMover(req.Difficulty)
+
+	case game.ModeBotVsBot:
+		xMover = game.NewBotMover(req.Difficulty)
+		oMover = game.NewBotMover(req.Difficulty)
+
+	default:
+		http.Error(w, "invalid move", http.StatusBadRequest)
+		return
+	}
+
+	g := game.NewGame(id, req.BoardSize, req.Mode, req.Difficulty, xMover, oMover)
+
+	if req.Mode == game.ModeBotVsBot {
+		for !g.Draw && g.Winner == "" {
+			if err := g.Maketurn(); err != nil {
 				break
 			}
-
-			if g.CheckDraw() {
-				g.Draw = true
-				break
-			}
-
-			g.TogglePlayer()
+			g.Evaluate()
 		}
-  	}
-    store.Mutex.Lock()
-    store.Games[id] = g
-    store.Mutex.Unlock()
-    store.SaveGame()
-    json.NewEncoder(w).Encode(g)
+	}
+	h.store.Create(g)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+
+	if err := json.NewEncoder(w).Encode(g); err != nil {
+		http.Error(w, "failed to encode response", http.StatusInternalServerError)
+		return
+	}
 }
 
+func (h *Handler) GetGameHandler(w http.ResponseWriter, r *http.Request) {
+	id := mux.Vars(r)["id"]
 
-func GameHandler(w http.ResponseWriter, r *http.Request) {
-    
-    id := strings.Split(r.URL.Path, "/")[2]
-    g, ok := store.Games[id]
+	g, ok := h.store.Get(id)
 
-    if !ok {
-        w.WriteHeader(http.StatusNotFound)
-        return
-    }
+	if !ok {
+		http.Error(w, "game not found", http.StatusNotFound)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
 
-    switch r.Method {
+	if err := json.NewEncoder(w).Encode(g); err != nil {
+		http.Error(w, "failed to encode response", http.StatusInternalServerError)
+		return
+	}
+}
 
-    case http.MethodGet:
-        json.NewEncoder(w).Encode(g)
+func (h *Handler) MakeMoveHandler(w http.ResponseWriter, r *http.Request) {
+	id := mux.Vars(r)["id"]
 
-    case http.MethodPost:
-        var move MoveRequest
-        json.NewDecoder(r.Body).Decode(&move)
+	g, ok := h.store.Get(id)
 
-        
-		err := g.MakeMove(move.Row, move.Col)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
+	if !ok {
+		http.Error(w, "Game not found", http.StatusNotFound)
+		return
+	}
+
+	if g.Winner != "" || g.Draw {
+		http.Error(w, "game already finished", http.StatusBadRequest)
+		return
+	}
+
+	var req MoveRequest
+
+	if err:= json.NewDecoder(r.Body).Decode(&req);err!=nil{
+		http.Error(w,"invalid request",http.StatusBadRequest)
+		return
+	}
+
+
+	if req.Player != "X" && req.Player != "O" {
+		http.Error(w, "invalid player", http.StatusBadRequest)
+		return
+	}
+
+	var err error
+
+	if g.Turn == "X" && g.PlayerX==nil{
+		err=g.MakeMove(req.Player,req.Row,req.Col)
+	} else if g.Turn=="O" && g.PlayerO==nil{
+		err= g.MakeMove(req.Player,req.Row,req.Col)
+	} else {
+		err = g.Maketurn()
+	}
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	g.Evaluate()
+
+	if g.Winner=="" && !g.Draw{
+		if (g.Turn == "X" && g.PlayerX!=nil) || (g.Turn =="O" && g.PlayerO!=nil) {
+			if err:=g.Maketurn();err==nil{
+				g.Evaluate()
+			}
 		}
+	}
 
-        if winner := g.CheckWinner(); winner != "" {
-            g.Winner = winner
-            json.NewEncoder(w).Encode(g)
-            return
-        }
+	if err := h.store.Create(g); err != nil {
+		http.Error(w, "failed to save game", http.StatusInternalServerError)
+		return
+	}
 
-        if g.CheckDraw() {
-            g.Draw = true
-            json.NewEncoder(w).Encode(g)
-            return
-        }
+	w.Header().Set("Content-Type", "application/json")
 
-       g.TogglePlayer()
+	if err := json.NewEncoder(w).Encode(g); err != nil {
+		http.Error(w, "failed to encode response", http.StatusInternalServerError)
+		return
+	}
 
-       // Player vs Bot
-        if g.Mode == 2 && g.Player == "O" {
-            g.BotMove()
-            g.TogglePlayer()
-        }
+}
 
-        if winner := g.CheckWinner(); winner != "" {
-            g.Winner = winner
-        }
+func (h *Handler) DeleteGameHandler(w http.ResponseWriter, r *http.Request) {
+	id := mux.Vars(r)["id"]
 
-        if g.CheckDraw() {
-            g.Draw = true
-        }
-        store.SaveGame()
-        json.NewEncoder(w).Encode(g)
+	if err := h.store.Delete(id); err != nil {
+		http.Error(w, "failed to delete game", http.StatusInternalServerError)
+		return
+	}
 
-    case http.MethodDelete:
-        store.Mutex.Lock()
-        delete(store.Games,id)
-        store.Mutex.Unlock()
-
-        store.SaveGame()
-        w.WriteHeader(http.StatusNoContent)
-    
-    default:
-        w.WriteHeader(http.StatusMethodNotAllowed)
-    }
-    
+	w.WriteHeader(http.StatusNoContent)
 }
