@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"path/filepath"
 	"tic_tac_toe/game"
 )
 
@@ -33,8 +32,7 @@ func (f *FileStore) Create(g *game.Game) error {
 }
 
 func (f *FileStore) Get(id string) (*game.Game, bool) {
-	// filePath := f.dataFile + "/" + id + ".json"
-	filePath:= filepath.Join(f.dataFile,id+".json")
+	filePath := f.dataFile + "/" + id + ".json"
 
 	file, err := os.Open(filePath)
 
