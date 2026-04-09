@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"log"
 	"os"
-	"path/filepath"
 	"tic_tac_toe/game"
 )
 
@@ -41,8 +40,12 @@ func (f *FileStore) Create(g *game.Game) (err error) {
 
 // Get helps to open the stored game from the file
 func (f *FileStore) Get(id string) (*game.Game, bool) {
+<<<<<<< HEAD
 	fileName := id + ".json"
 	filePath := filepath.Join(f.dataFile, fileName)
+=======
+	filePath := f.dataFile + "/" + id + ".json"
+>>>>>>> e0642da (This change will add cli using go bubble tea)
 
 	file, err := os.Open(filePath)
 
