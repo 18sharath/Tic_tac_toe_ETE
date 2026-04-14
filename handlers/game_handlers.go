@@ -28,7 +28,11 @@ type MoveRequest struct {
 	Col    int    `json:"col"`
 }
 
+<<<<<<< HEAD
 // Handler handles http request using gamestore
+=======
+
+>>>>>>> 5f61e4f (This change will ask name of the player and dynamic board size in cli)
 type Handler struct {
 	store store.GameStore
 }
@@ -44,7 +48,7 @@ func (h *Handler) CreateGameHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-
+		
 	var req CreateGameRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "invalid request body", http.StatusBadRequest)
