@@ -23,6 +23,7 @@ type MoveRequest struct{
 	Col int `json:"col"`
 }
 
+
 type Handler struct {
 	store store.Store
 }
@@ -36,7 +37,7 @@ func (h *Handler) CreateGameHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-
+		
 	var req CreateGameRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "invalid request body", http.StatusBadRequest)

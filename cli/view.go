@@ -2,11 +2,23 @@ package main
 
 import "github.com/charmbracelet/lipgloss"
 
-
 func (m model) View() string {
 
 	switch m.screen {
 
+	case nameScreen:
+		label := "Enter your Name:"
+
+		if m.inputMode == "name2" {
+			label = "Enter Player 2 Name:"
+		}
+
+		return lipgloss.Place(60, 20, lipgloss.Center, lipgloss.Center, titleStyle.Render(label+m.input))
+
+	case sizeScreen:
+		return lipgloss.Place(60, 20, lipgloss.Center, lipgloss.Center,
+			titleStyle.Render("Enter Board Size (>=3):"+m.input),
+		)
 	case menuScreen:
 
 		s := "\n"
@@ -43,7 +55,7 @@ func (m model) View() string {
 			s += item + "\n\n"
 		}
 
-		s += helpStyle.Render("↑/↓ to move • Enter to select • q to quit")
+		s += helpStyle.Render("↑/↓ to move • Enter to select • b to back • q to quit")
 
 		return lipgloss.Place(60, 20, lipgloss.Center, lipgloss.Center, s)
 
@@ -86,8 +98,8 @@ func (m model) View() string {
 
 		help := lipgloss.PlaceHorizontal(60, lipgloss.Center, infoStyle.Render("r: restart • b: back • q: quit"))
 		s += "\n\n" + help
-
-		return lipgloss.Place(60, 20, lipgloss.Center, lipgloss.Center, s)
+		width := boardWidth(len(m.game.Board)) + 10
+		return lipgloss.Place(width, 20, lipgloss.Center, lipgloss.Center, s)
 	}
 
 	return ""

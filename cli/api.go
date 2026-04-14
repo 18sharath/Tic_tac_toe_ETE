@@ -22,12 +22,12 @@ type Game struct {
 	Draw   bool       `json:"draw"`
 }
 
-func CreateGame(mode int, difficulty int) (*Game, error) {
+func CreateGame(mode int, difficulty int,size int ) (*Game, error) {
 
 	reqBody := CreateGameRequest{
 		Mode:       mode,
 		Difficulty: difficulty,
-		BoardSize:  3,
+		BoardSize:  size,
 	}
 
 	jsonData, _ := json.Marshal(reqBody)

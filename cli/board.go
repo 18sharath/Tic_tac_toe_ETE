@@ -1,54 +1,105 @@
 package main
 
 import (
-	"fmt"
-
+	"strings"
 	"github.com/charmbracelet/lipgloss"
 )
+
+func boardWidth(size int) int {
+	cellWidth :=7
+	return size*(cellWidth+1)
+}
 
 func drawBoard(board [][]string, row, col int) string {
 	s := "\n"
 
-	for i := 0; i < 3; i++ {
+	size := len(board)
 
-		s += "       |       |       \n"
+	cellWidth := 7 
 
-		for j := 0; j < 3; j++ {
+	makePaddingRow := func() string {
+		line := ""
+		for j := 0; j < size; j++ {
+			line += strings.Repeat(" ", cellWidth)
+			if j < size-1 {
+				line += "|"
+			}
+		}
+		return line + "\n"
+	}
+
+	makeSeparator := func() string {
+		line := ""
+		for j := 0; j < size; j++ {
+			line += strings.Repeat("-", cellWidth)
+			if j < size-1 {
+				line += "+"
+			}
+		}
+		return line + "\n"
+	}
+
+	for i := 0; i < size; i++ {
+
+		s += makePaddingRow()
+
+		for j := 0; j < size; j++ {
 
 			cell := board[i][j]
 
-			switch cell{
+			switch cell {
 			case "":
 				cell = " "
-
 			case "X":
 				cell = xStyle.Render("X")
-
 			case "O":
 				cell = oStyle.Render("O")
 			}
 
-			// cursor highlight
 			if i == row && j == col {
 				cell = cursorStyle.Render(cell)
 			}
 
-			s += fmt.Sprintf("   %s   ", cell)
+			raw := board[i][j]
+			display := " "
 
-			if j < 2 {
+			switch raw{
+			case "X":
+				display = xStyle.Render("X")
+			case "O":
+				display = oStyle.Render("O")
+			}
+
+			if i == row && j == col {
+				display = cursorStyle.Render(display)
+			}
+
+			
+			contentWidth := 1 
+			padding := (cellWidth - contentWidth) / 2
+
+			if padding < 0 {
+				padding = 0 
+			}
+
+			left := strings.Repeat(" ", padding)
+			right := strings.Repeat(" ", cellWidth-padding-contentWidth)
+
+			s += left + display + right
+
+			if j < size-1 {
 				s += "|"
 			}
 		}
 
 		s += "\n"
 
-		// bottom padding line
-		s += "       |       |       \n"
+		s += makePaddingRow()
 
-		if i < 2 {
-			s += "-------+-------+-------\n"
+		if i < size-1 {
+			s += makeSeparator()
 		}
 	}
-
-	return lipgloss.Place(60, 20, lipgloss.Center, lipgloss.Center, s)
+	width := boardWidth(len(board))
+	return lipgloss.Place(width+10, 20, lipgloss.Center, lipgloss.Center, s)
 }

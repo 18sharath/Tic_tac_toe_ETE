@@ -67,12 +67,12 @@ func (g *Game) Evaluate() {
 
 	//  Check rows
 	for i := 0; i < size; i++ {
-		first := g.Board[i][0]
+		first := g.Board[i][0] 
 		if first == "" {
 			continue
 		}
 		win := true
-		for j := 1; j < size; j++ {
+		for j := 1; j < size; j++ { 
 			if g.Board[i][j] != first {
 				win = false
 				break

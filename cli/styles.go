@@ -22,7 +22,7 @@ var (
 
 	selectedStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.Color("0")).
-			Background(lipgloss.Color("2")). // green background
+			Background(lipgloss.Color("2")). 
 			Bold(true).
 			Padding(0, 4)
 

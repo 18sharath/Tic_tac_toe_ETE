@@ -2,9 +2,8 @@ package main
 
 import (
 	"fmt"
-	"os"
-
 	tea "github.com/charmbracelet/bubbletea"
+	"os"
 )
 
 var menuOptions = []string{
@@ -18,7 +17,6 @@ var difficultyOptions = []string{
 	"Easy",
 	"Medium",
 	"Hard",
-	"Back",
 }
 
 func initialModel() model {
