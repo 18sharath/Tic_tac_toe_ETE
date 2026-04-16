@@ -2,22 +2,25 @@ package store
 
 import (
 	"encoding/json"
-	"fmt"
+	"log"
 	"os"
 	"tic_tac_toe/game"
 )
 
+// FileStore contain the dataFIle path
 type FileStore struct {
 	dataFile string
 }
 
+//NewFIleStore helps to assign file to dataFile
 func NewFileStore(file string) *FileStore {
 	return &FileStore{
 		dataFile: file,
 	}
 }
 
-func (f *FileStore) Create(g *game.Game) error {
+// Create function  helps to create new file and save the game to file
+func (f *FileStore) Create(g *game.Game) (err error) {
 
 	filePath := f.dataFile + "/" + g.ID + ".json"
 
@@ -26,21 +29,32 @@ func (f *FileStore) Create(g *game.Game) error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func(){
+		if cerr:=file.Close();cerr!=nil && err==nil{
+			err=cerr
+		}
+	}()
 
-	return json.NewEncoder(file).Encode(g)
+	err=json.NewEncoder(file).Encode(g)
+	return err
 }
 
+// Get helps to open the stored game from the file
 func (f *FileStore) Get(id string) (*game.Game, bool) {
 	filePath := f.dataFile + "/" + id + ".json"
 
 	file, err := os.Open(filePath)
 
 	if err != nil {
-		fmt.Println("Looking for file:", filePath)
+		log.Println("Looking for file:", filePath)
 		return nil, false
 	}
-	defer file.Close()
+
+	defer func(){
+		if err:=file.Close();err!=nil{
+			log.Printf("Failed to close the file %s: %v",filePath,err)
+		}
+	}()
 
 	var g game.Game
 	
@@ -63,6 +77,7 @@ func (f *FileStore) Get(id string) (*game.Game, bool) {
 	return &g, true
 }
 
+// Delete helps to delete stored game from the file
 func (f *FileStore) Delete(id string) error {
 	filePath := f.dataFile + "/" + id + ".json"
 

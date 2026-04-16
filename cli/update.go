@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
-	tea "github.com/charmbracelet/bubbletea"
+	"log"
 	"time"
+
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 type botMsg struct {
@@ -24,6 +26,8 @@ func botPlayCmd(id string) tea.Cmd {
 	}
 }
 
+// Update processes a Bubble Tea message and returns the updated model
+// along with any command to be executed.
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
@@ -78,7 +82,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if m.screen == sizeScreen {
 					size := 3
 
-					fmt.Sscanf(m.input, "%d", &size)
+					n, err := fmt.Sscanf(m.input, "%d", &size)
+					if err != nil || n != 1 {
+						log.Println("Invalid number!")
+						return m, nil
+					}
 					if size < 3 {
 						size = 3
 					}
@@ -86,13 +94,20 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.BoardSize = size
 					m.input = ""
 
-					if m.mode == 2 || m.mode == 3 {
+					if m.mode == 2 {
 						m.screen = difficultyScreen
 						m.cursor = 0
 						return m, nil
 					}
 
-					g, err := CreateGame(m.mode, m.difficulty, m.BoardSize)
+					if m.mode == 3 {
+						m.screen = difficultyScreen
+						m.cursor = 0
+						m.inputMode = "diffX"
+						return m, nil
+					}
+
+					g, err := CreateGame(m.mode, m.difficultyX, m.difficultyO, m.BoardSize)
 					if err != nil {
 						return m, nil
 					}
@@ -118,7 +133,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "r":
 			if m.screen == gameScreen {
-				g, err := CreateGame(m.mode, m.difficulty, m.BoardSize)
+				g, err := CreateGame(m.mode, m.difficultyX, m.difficultyO, m.BoardSize)
 				if err == nil {
 
 					m.row = 0
@@ -197,30 +212,47 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			case difficultyScreen:
 
-				if m.cursor == 3 {
-					m.screen = menuScreen
-					m.cursor = 0
-					return m, nil
+				diff := m.cursor + 1
+
+				if m.mode==2{
+					m.difficultyO=diff
+
+					g,err:= CreateGame(m.mode, 0,m.difficultyO,m.BoardSize)
+					if err!=nil{
+						return m,nil
+					}
+
+					m.game=g
+					m.screen=gameScreen
+					m.row=0
+					m.col=0
+					return m,nil
 				}
-
-				m.difficulty = m.cursor + 1
-
-				g, err := CreateGame(m.mode, m.difficulty, m.BoardSize)
-				if err != nil {
-					return m, nil
-				}
-
-				m.game = g
-				m.row = 0
-				m.col = 0
-
-				m.screen = gameScreen
 
 				if m.mode == 3 {
-					return m, botPlayCmd(m.game.ID)
-				}
+					if m.inputMode == "diffX" {
+						m.difficultyX = diff
+						m.inputMode = "diffO"
+						return m, nil
+					}
 
-				return m, nil
+					if m.inputMode == "diffO" {
+						m.difficultyO = diff
+						g, err := CreateGame(m.mode, m.difficultyX, m.difficultyO, m.BoardSize)
+
+						if err != nil {
+							return m, nil
+						}
+
+						m.game = g
+						m.screen = gameScreen
+						m.row = 0
+						m.col = 0
+						return m, botPlayCmd(m.game.ID)
+
+					}
+				}
+			
 
 			case gameScreen:
 

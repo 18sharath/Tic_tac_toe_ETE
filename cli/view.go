@@ -2,6 +2,7 @@ package main
 
 import "github.com/charmbracelet/lipgloss"
 
+// View renders the current state of the model as a string.
 func (m model) View() string {
 
 	switch m.screen {
@@ -42,7 +43,16 @@ func (m model) View() string {
 	case difficultyScreen:
 
 		s := "\n"
-		s += menuTitleStyle.Render("SELECT DIFFICULTY") + "\n\n"
+		title := "Select Difficulty"
+
+		if m.mode == 3 {
+			if m.inputMode == "diffX" {
+				title = "Select Difficulty for Bot X"
+			} else {
+				title = "Select Difficulty for Bot O"
+			}
+		}
+		s += menuTitleStyle.Render(title) + "\n\n"
 
 		for i, opt := range difficultyOptions {
 

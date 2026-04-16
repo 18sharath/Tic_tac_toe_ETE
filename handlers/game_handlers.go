@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
-
 	"tic_tac_toe/game"
 	"tic_tac_toe/store"
 
@@ -11,33 +11,38 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// CreateGameRequest represents the playload required to create a new game.
 type CreateGameRequest struct {
 	Mode       game.Mode       `json:"mode"`
-	Difficulty game.Difficulty `json:"difficulty"`
+	DifficultyX game.Difficulty `json:"difficultyX"`
+	DifficultyO game.Difficulty `json:"difficultyO"`
 	BoardSize  int             `json:"boardSize"`
 }
 
-type MoveRequest struct{
+// MoveRequest represents the payload required to make a move in a game.
+type MoveRequest struct {
 	Player string `json:"player"`
-	Row int `json:"row"`
-	Col int `json:"col"`
+	Row    int    `json:"row"`
+	Col    int    `json:"col"`
 }
 
-
+// handler handles http request using gamestore
 type Handler struct {
-	store store.Store
+	store store.GameStore
 }
 
-func NewHandler(s store.Store) *Handler {
+// NewHandler creates a new handler with the given gamestore
+func NewHandler(s store.GameStore) *Handler {
 	return &Handler{store: s}
 }
 
+// CreateGameHandler handles the http request for create a new game
 func (h *Handler) CreateGameHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-		
+
 	var req CreateGameRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "invalid request body", http.StatusBadRequest)
@@ -60,18 +65,18 @@ func (h *Handler) CreateGameHandler(w http.ResponseWriter, r *http.Request) {
 
 	case game.ModeHumanVsBot:
 		xMover = nil
-		oMover = game.NewBotMover(req.Difficulty)
+		oMover = game.NewBotMover(req.DifficultyO)
 
 	case game.ModeBotVsBot:
-		xMover = game.NewBotMover(req.Difficulty)
-		oMover = game.NewBotMover(req.Difficulty)
+		xMover = game.NewBotMover(req.DifficultyX)
+		oMover = game.NewBotMover(req.DifficultyO)
 
 	default:
 		http.Error(w, "invalid move", http.StatusBadRequest)
 		return
 	}
 
-	g := game.NewGame(id, req.BoardSize, req.Mode, req.Difficulty, xMover, oMover)
+	g := game.NewGame(id, req.BoardSize, req.Mode, req.DifficultyO, xMover, oMover)
 
 	if req.Mode == game.ModeBotVsBot {
 		for !g.Draw && g.Winner == "" {
@@ -81,7 +86,10 @@ func (h *Handler) CreateGameHandler(w http.ResponseWriter, r *http.Request) {
 			g.Evaluate()
 		}
 	}
-	h.store.Create(g)
+	if err := h.store.Create(g); err != nil {
+		log.Println("error creating game:", err)
+		return
+	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 
@@ -91,6 +99,7 @@ func (h *Handler) CreateGameHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GetGameHandler handles the http request for get games based on gameId
 func (h *Handler) GetGameHandler(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 
@@ -108,6 +117,7 @@ func (h *Handler) GetGameHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// MakeMoveHandler handles the http request to make move.
 func (h *Handler) MakeMoveHandler(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 
@@ -125,11 +135,10 @@ func (h *Handler) MakeMoveHandler(w http.ResponseWriter, r *http.Request) {
 
 	var req MoveRequest
 
-	if err:= json.NewDecoder(r.Body).Decode(&req);err!=nil{
-		http.Error(w,"invalid request",http.StatusBadRequest)
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "invalid request", http.StatusBadRequest)
 		return
 	}
-
 
 	if req.Player != "X" && req.Player != "O" {
 		http.Error(w, "invalid player", http.StatusBadRequest)
@@ -138,10 +147,10 @@ func (h *Handler) MakeMoveHandler(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
-	if g.Turn == "X" && g.PlayerX==nil{
-		err=g.MakeMove(req.Player,req.Row,req.Col)
-	} else if g.Turn=="O" && g.PlayerO==nil{
-		err= g.MakeMove(req.Player,req.Row,req.Col)
+	if g.Turn == "X" && g.PlayerX == nil {
+		err = g.MakeMove(req.Player, req.Row, req.Col)
+	} else if g.Turn == "O" && g.PlayerO == nil {
+		err = g.MakeMove(req.Player, req.Row, req.Col)
 	} else {
 		err = g.Maketurn()
 	}
@@ -153,9 +162,9 @@ func (h *Handler) MakeMoveHandler(w http.ResponseWriter, r *http.Request) {
 
 	g.Evaluate()
 
-	if g.Winner=="" && !g.Draw{
-		if (g.Turn == "X" && g.PlayerX!=nil) || (g.Turn =="O" && g.PlayerO!=nil) {
-			if err:=g.Maketurn();err==nil{
+	if g.Winner == "" && !g.Draw {
+		if (g.Turn == "X" && g.PlayerX != nil) || (g.Turn == "O" && g.PlayerO != nil) {
+			if err := g.Maketurn(); err == nil {
 				g.Evaluate()
 			}
 		}
@@ -175,6 +184,7 @@ func (h *Handler) MakeMoveHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// DeleteGameHandler hanldes the http request to delete already existing game
 func (h *Handler) DeleteGameHandler(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 

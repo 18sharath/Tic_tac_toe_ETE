@@ -4,6 +4,8 @@ import (
 	"errors"
 )
 
+
+// Game represents the state of the single game instance.
 type Game struct {
 	ID      string `json:"id"`
 	Board   Board  `json:"board"`
@@ -17,6 +19,7 @@ type Game struct {
    
 }
 
+// NewGame initialze the game with provided data
 func NewGame(id string, size int, mode Mode, difficulty Difficulty, xMover Mover, oMover Mover) *Game {
 	return &Game{
 		ID:      id,
@@ -29,6 +32,7 @@ func NewGame(id string, size int, mode Mode, difficulty Difficulty, xMover Mover
 	}
 }
 
+// Maketurn helps to place bot player move in game board
 func (g *Game) Maketurn() error {
 	var mover Mover
 	if g.Turn == "X" {
@@ -46,7 +50,7 @@ func (g *Game) Maketurn() error {
 		return err
 	}
 	if g.Board[pos.Row][pos.Col] != "" {
-		return errors.New("Invalid Move")
+		return errors.New("invalid move")
 	}
 	g.Board[pos.Row][pos.Col] = g.Turn
 	g.toggleTurn()
@@ -54,6 +58,7 @@ func (g *Game) Maketurn() error {
 
 }
 
+// toggleTurn toggle player on each move
 func (g *Game) toggleTurn() {
 	if g.Turn == "X" {
 		g.Turn = "O"
@@ -62,6 +67,7 @@ func (g *Game) toggleTurn() {
 	}
 }
 
+// Evaluate will check for draw and winning condition
 func (g *Game) Evaluate() {
 	size := len(g.Board)
 
@@ -148,9 +154,10 @@ func (g *Game) Evaluate() {
 	g.Draw = true
 }
 
+// MakeMove helps to place human player move in game board
 func (g *Game) MakeMove(player string, row,col int) error{
     if player!= g.Turn{
-        return errors.New("Not your turn")
+        return errors.New("not your turn")
     }
     size := len(g.Board)
 
@@ -159,7 +166,7 @@ func (g *Game) MakeMove(player string, row,col int) error{
     }
 
     if g.Board[row][col]!=""{
-        return errors.New("Cell already occupied")
+        return errors.New("cell already occupied")
     }
 
     g.Board[row][col]=player

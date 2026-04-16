@@ -16,7 +16,7 @@ func main() {
 	port := flag.String("port", "8080", "server port")
 	flag.Parse()
 
-	var s store.Store
+	var s store.GameStore
 
 	if *storeType == "file" {
 		s = store.NewFileStore("data")
@@ -29,7 +29,7 @@ func main() {
 
 	r.HandleFunc("/games", handler.CreateGameHandler).Methods("POST")
 	r.HandleFunc("/games/{id}", handler.GetGameHandler).Methods("GET")
-	r.HandleFunc("/games/{id}", handler.MakeMoveHandler).Methods("POST")
+	r.HandleFunc("/games/{id}", handler.MakeMoveHandler).Methods("PUT")
 	r.HandleFunc("/games/{id}", handler.DeleteGameHandler).Methods("DELETE")
 
 	addr := ":" + *port
@@ -40,5 +40,5 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-    
+
 }

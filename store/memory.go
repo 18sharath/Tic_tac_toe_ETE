@@ -5,17 +5,27 @@ import (
 	"sync"
 )
 
+
+var (
+	// Games store all the games indexed by thier unique ID.
+	Games    = make(map[string]*game.Game)
+	Mutex    sync.RWMutex
+)
+
+// MemoryStore create map to store games in memory.
 type MemoryStore struct {
 	games map[string]*game.Game
 	mutex sync.RWMutex
 }
 
+// NewMemoryStore creates and returns a new in-memory GameStore.
 func NewMemoryStore() *MemoryStore {
 	return &MemoryStore{
 		games: make(map[string]*game.Game),
 	}
 }
 
+// Create helps to store new game in map
 func (m *MemoryStore) Create(g *game.Game) error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
@@ -23,6 +33,7 @@ func (m *MemoryStore) Create(g *game.Game) error {
 	return nil
 }
 
+//Get helps to fetch the games from the map
 func (m *MemoryStore) Get(id string) (*game.Game, bool) {
 	m.mutex.RLock()
 	defer m.mutex.RUnlock()
@@ -30,6 +41,7 @@ func (m *MemoryStore) Get(id string) (*game.Game, bool) {
 	return g, ok
 }
 
+// Delete helps to remove the games from the map
 func (m *MemoryStore) Delete(id string) error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
@@ -38,8 +50,3 @@ func (m *MemoryStore) Delete(id string) error {
 }
 
 
-var (
-	Games    = make(map[string]*game.Game)
-	Mutex    sync.RWMutex
-	dataFile = "data/games.json"
-)

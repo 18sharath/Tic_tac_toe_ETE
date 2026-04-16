@@ -10,6 +10,7 @@ func boardWidth(size int) int {
 	return size*(cellWidth+1)
 }
 
+// drawBoard display the current state of the game.
 func drawBoard(board [][]string, row, col int) string {
 	s := "\n"
 
@@ -44,22 +45,6 @@ func drawBoard(board [][]string, row, col int) string {
 		s += makePaddingRow()
 
 		for j := 0; j < size; j++ {
-
-			cell := board[i][j]
-
-			switch cell {
-			case "":
-				cell = " "
-			case "X":
-				cell = xStyle.Render("X")
-			case "O":
-				cell = oStyle.Render("O")
-			}
-
-			if i == row && j == col {
-				cell = cursorStyle.Render(cell)
-			}
-
 			raw := board[i][j]
 			display := " "
 

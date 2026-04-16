@@ -1,9 +1,9 @@
 package main
 
 import (
-	"fmt"
+	"flag"
+	"log"
 	tea "github.com/charmbracelet/bubbletea"
-	"os"
 )
 
 var menuOptions = []string{
@@ -28,9 +28,13 @@ func initialModel() model {
 func (m model) Init() tea.Cmd { return nil }
 
 func main() {
+	var baseUrlFlag = flag.String("base-url", "http://localhost:8080", "backend API base url")
+	flag.Parse()
+
+	baseUrl = *baseUrlFlag
+
 	p := tea.NewProgram(initialModel())
 	if _, err := p.Run(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		log.Fatal(err)
 	}
 }

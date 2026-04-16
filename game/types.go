@@ -1,5 +1,6 @@
 package game
 
+// Mode represents the type of game being played.
 type Mode int
 
 const (
@@ -8,6 +9,7 @@ const (
 	ModeBotVsBot
 )
 
+// Difficulty represents the difficulty level of a bot player.
 type Difficulty int
 
 const (
