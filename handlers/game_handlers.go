@@ -4,7 +4,11 @@ package handlers
 
 import (
 	"encoding/json"
+<<<<<<< HEAD
 	"fmt"
+=======
+	"log"
+>>>>>>> ed86cc4 (This change will update the codebase based on the comments on PR)
 	"net/http"
 	"tic_tac_toe/game"
 	"tic_tac_toe/store"
@@ -15,10 +19,17 @@ import (
 
 // CreateGameRequest represents the playload required to create a new game.
 type CreateGameRequest struct {
+<<<<<<< HEAD
 	Mode        game.Mode       `json:"mode"`
 	DifficultyX game.Difficulty `json:"difficultyX"`
 	DifficultyO game.Difficulty `json:"difficultyO"`
 	BoardSize   int             `json:"boardSize"`
+=======
+	Mode       game.Mode       `json:"mode"`
+	DifficultyX game.Difficulty `json:"difficultyX"`
+	DifficultyO game.Difficulty `json:"difficultyO"`
+	BoardSize  int             `json:"boardSize"`
+>>>>>>> ed86cc4 (This change will update the codebase based on the comments on PR)
 }
 
 // MoveRequest represents the payload required to make a move in a game.
@@ -29,10 +40,14 @@ type MoveRequest struct {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 // Handler handles http request using gamestore
 =======
 
 >>>>>>> 5f61e4f (This change will ask name of the player and dynamic board size in cli)
+=======
+// handler handles http request using gamestore
+>>>>>>> ed86cc4 (This change will update the codebase based on the comments on PR)
 type Handler struct {
 	store store.GameStore
 }
@@ -48,7 +63,7 @@ func (h *Handler) CreateGameHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-		
+
 	var req CreateGameRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "invalid request body", http.StatusBadRequest)
@@ -87,7 +102,19 @@ func (h *Handler) CreateGameHandler(w http.ResponseWriter, r *http.Request) {
 	if req.Mode == game.ModeBotVsBot {
 		runBotGame(g)
 	}
+<<<<<<< HEAD
 	if !h.saveGame(w, g) {
+=======
+	if err := h.store.Create(g); err != nil {
+		log.Println("error creating game:", err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+
+	if err := json.NewEncoder(w).Encode(g); err != nil {
+		http.Error(w, "failed to encode response", http.StatusInternalServerError)
+>>>>>>> ed86cc4 (This change will update the codebase based on the comments on PR)
 		return
 	}
 	writeJSONResponse(w, http.StatusCreated, g)
@@ -155,6 +182,7 @@ func writeJSONResponse(w http.ResponseWriter, status int, data interface{}) {
 	}
 }
 
+<<<<<<< HEAD
 // runBotGame plays a BotVsBot game to completion, stopping on mover error.
 func runBotGame(g *game.Game) {
 	for !g.Draw && g.Winner == "" {
@@ -183,6 +211,8 @@ func parseMoveRequest(r *http.Request) (MoveRequest, error) {
 	return req, validatePlayer(req.Player)
 }
 
+=======
+>>>>>>> ed86cc4 (This change will update the codebase based on the comments on PR)
 // MakeMoveHandler handles the http request to make move.
 func (h *Handler) MakeMoveHandler(w http.ResponseWriter, r *http.Request) {
 	g, err := h.getGameFromRequest(r)
@@ -196,14 +226,54 @@ func (h *Handler) MakeMoveHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+<<<<<<< HEAD
 	req, err := parseMoveRequest(r)
+=======
+	var req MoveRequest
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "invalid request", http.StatusBadRequest)
+		return
+	}
+
+	if req.Player != "X" && req.Player != "O" {
+		http.Error(w, "invalid player", http.StatusBadRequest)
+		return
+	}
+
+	var err error
+
+	if g.Turn == "X" && g.PlayerX == nil {
+		err = g.MakeMove(req.Player, req.Row, req.Col)
+	} else if g.Turn == "O" && g.PlayerO == nil {
+		err = g.MakeMove(req.Player, req.Row, req.Col)
+	} else {
+		err = g.Maketurn()
+	}
+
+>>>>>>> ed86cc4 (This change will update the codebase based on the comments on PR)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
+<<<<<<< HEAD
 	if err := g.PlayTurn(req.Player, req.Row, req.Col); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+=======
+	g.Evaluate()
+
+	if g.Winner == "" && !g.Draw {
+		if (g.Turn == "X" && g.PlayerX != nil) || (g.Turn == "O" && g.PlayerO != nil) {
+			if err := g.Maketurn(); err == nil {
+				g.Evaluate()
+			}
+		}
+	}
+
+	if err := h.store.Create(g); err != nil {
+		http.Error(w, "failed to save game", http.StatusInternalServerError)
+>>>>>>> ed86cc4 (This change will update the codebase based on the comments on PR)
 		return
 	}
 

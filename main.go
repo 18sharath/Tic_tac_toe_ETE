@@ -47,4 +47,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+<<<<<<< HEAD
+=======
+
+>>>>>>> ed86cc4 (This change will update the codebase based on the comments on PR)
 }
