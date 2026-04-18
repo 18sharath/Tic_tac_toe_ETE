@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -14,7 +13,6 @@ type botMsg struct {
 
 func botPlayCmd(id string) tea.Cmd {
 	return func() tea.Msg {
-
 		time.Sleep(500 * time.Millisecond)
 
 		g, err := GetGame(id)
@@ -25,244 +23,292 @@ func botPlayCmd(id string) tea.Cmd {
 		return botMsg{game: g}
 	}
 }
-
-// Update processes a Bubble Tea message and returns the updated model
-// along with any command to be executed.
+// Update processes a Bubble Tea message and returns the updated model.
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-
 	switch msg := msg.(type) {
-
 	case botMsg:
-
-		m.game = msg.game
-
-		if m.game.Winner == "" && !m.game.Draw {
-			return m, botPlayCmd(m.game.ID)
-		}
-
-		return m, nil
+		return m.handleBotMsg(msg)
 
 	case tea.KeyMsg:
+		return m.handleKeyMsg(msg)
+	}
 
-		if m.screen == nameScreen || m.screen == sizeScreen {
-			switch msg.Type {
-			case tea.KeyRunes:
-				m.input += string(msg.Runes)
+	return m, nil
+}
 
-			case tea.KeyBackspace:
-				if len(m.input) > 0 {
-					m.input = m.input[:len(m.input)-1]
-				}
+func (m model) handleBotMsg(msg botMsg) (tea.Model, tea.Cmd) {
+	m.game = msg.game
 
-			case tea.KeyEnter:
+	if m.game.Winner == "" && !m.game.Draw {
+		return m, botPlayCmd(m.game.ID)
+	}
 
-				if m.screen == nameScreen {
-					if m.inputMode == "name1" {
-						m.player1 = m.input
-						m.input = ""
+	return m, nil
+}
 
-						if m.mode == 1 {
-							m.inputMode = "name2"
-						} else {
-							m.screen = sizeScreen
-							m.inputMode = "size"
-						}
-						return m, nil
-					}
+func (m model) handleKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	// input screens handled separately
+	if m.screen == nameScreen || m.screen == sizeScreen {
+		return m.handleInputScreen(msg)
+	}
 
-					if m.inputMode == "name2" {
-						m.player2 = m.input
-						m.input = ""
-						m.screen = sizeScreen
-						m.inputMode = "size"
-						return m, nil
-					}
-				}
+	switch msg.String() {
+	case "r":
+		return m.handleRestart()
+	case "b":
+		return m.handleBack()
+	case "q":
+		return m, tea.Quit
+	case "up", "down", "left", "right":
+		return m.handleMovement(msg.String())
+	case "enter":
+		return m.handleEnter()
+	}
 
-				if m.screen == sizeScreen {
-					size := 3
+	return m, nil
+}
 
-					n, err := fmt.Sscanf(m.input, "%d", &size)
-					if err != nil || n != 1 {
-						log.Println("Invalid number!")
-						return m, nil
-					}
-					if size < 3 {
-						size = 3
-					}
+func (m model) handleInputScreen(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
-					m.BoardSize = size
-					m.input = ""
+	switch msg.Type {
+	case tea.KeyRunes:
+		m.input += string(msg.Runes)
 
-					if m.mode == 2 {
-						m.screen = difficultyScreen
-						m.cursor = 0
-						return m, nil
-					}
+	case tea.KeyBackspace:
+		if len(m.input) > 0 {
+			m.input = m.input[:len(m.input)-1]
+		}
 
-					if m.mode == 3 {
-						m.screen = difficultyScreen
-						m.cursor = 0
-						m.inputMode = "diffX"
-						return m, nil
-					}
+	case tea.KeyEnter:
+		return m.handleInputEnter()
+	}
 
-					g, err := CreateGame(m.mode, m.difficultyX, m.difficultyO, m.BoardSize)
-					if err != nil {
-						return m, nil
-					}
-					m.game = g
-					m.screen = gameScreen
+	return m, nil
+}
 
-					m.row = 0
-					m.col = 0
 
-					if m.mode == 3 {
-						return m, botPlayCmd(m.game.ID)
-					}
+func (m model) handleInputEnter() (tea.Model, tea.Cmd) {
+	// NAME FLOW
+	if m.screen == nameScreen {
 
-					return m, nil
+		if m.inputMode == inputName1 {
+			m.player1 = m.input
+			m.input = ""
 
-				}
-
+			if m.mode == 1 {
+				m.inputMode = inputName2
+			} else {
+				m.screen = sizeScreen
+				m.inputMode = inputSize
 			}
-
 			return m, nil
 		}
 
-		switch msg.String() {
-		case "r":
-			if m.screen == gameScreen {
-				g, err := CreateGame(m.mode, m.difficultyX, m.difficultyO, m.BoardSize)
-				if err == nil {
+		if m.inputMode == inputName2 {
+			m.player2 = m.input
+			m.input = ""
+			m.screen = sizeScreen
+			m.inputMode = inputSize
+			return m, nil
+		}
+	}
 
-					m.row = 0
-					m.col = 0
-					m.game = g
-				}
-				return m, nil
-			}
+	// SIZE FLOW
+	if m.screen == sizeScreen {
+		size := 3
 
-		case "b":
-			if m.screen == gameScreen || m.screen == difficultyScreen {
-				m.screen = menuScreen
-				m.cursor = 0
-				m.game = nil
-				return m, nil
-			}
+		n, err := fmt.Sscanf(m.input, "%d", &size)
+		if err != nil || n != 1 {
+			return m, nil
+		}
 
-		case "q":
-			return m, tea.Quit
+		if size < 3 {
+			size = 3
+		}
 
-		case "up":
-			if m.screen == gameScreen && m.row > 0 {
-				m.row--
-			} else if m.cursor > 0 {
-				m.cursor--
-			}
+		m.BoardSize = size
+		m.input = ""
 
-		case "down":
-			max := len(menuOptions) - 1
-			if m.screen == difficultyScreen {
-				max = len(difficultyOptions) - 1
-			}
-			if m.screen == gameScreen && m.row < len(m.game.Board)-1 {
-				m.row++
-			} else if m.cursor < max {
-				m.cursor++
-			}
+		return m.startGameAfterSize()
+	}
 
-		case "left":
-			if m.screen == gameScreen && m.col > 0 {
-				m.col--
-			}
+	return m, nil
+}
 
-		case "right":
-			if m.screen == gameScreen && m.col < len(m.game.Board)-1 {
-				m.col++
-			}
 
-		case "enter":
+func (m model) startGameAfterSize() (tea.Model, tea.Cmd) {
 
-			switch m.screen {
+	if m.mode == int(ModeHumanVsBot) {
+		m.screen = difficultyScreen
+		m.cursor = 0
+		return m, nil
+	}
 
-			case menuScreen:
-				switch m.cursor {
-				case 0:
-					m.mode = 1
-					m.screen = nameScreen
-					m.inputMode = "name1"
-					m.input = ""
+	if m.mode == int(ModeBotVsBot) {
+		m.screen = difficultyScreen
+		m.cursor = 0
+		m.inputMode = inputDiffX
+		return m, nil
+	}
 
-				case 1:
-					m.mode = 2
-					m.screen = nameScreen
-					m.inputMode = "name1"
-					m.input = ""
+	g, err := CreateGame(m.mode, m.difficultyX, m.difficultyO, m.BoardSize)
+	if err != nil {
+		return m, nil
+	}
 
-				case 2:
-					m.mode = 3
-					m.screen = sizeScreen
-					m.inputMode = "size"
-					m.input = ""
+	m.game = g
+	m.screen = gameScreen
+	m.row, m.col = 0, 0
 
-				default:
-					return m, tea.Quit
-				}
+	return m, nil
+}
 
-			case difficultyScreen:
+func (m model) handleMovement(key string) (tea.Model, tea.Cmd) {
 
-				diff := m.cursor + 1
+	switch key {
 
-				if m.mode==2{
-					m.difficultyO=diff
+	case "up":
+		if m.screen == gameScreen && m.row > 0 {
+			m.row--
+		} else if m.cursor > 0 {
+			m.cursor--
+		}
 
-					g,err:= CreateGame(m.mode, 0,m.difficultyO,m.BoardSize)
-					if err!=nil{
-						return m,nil
-					}
+	case "down":
+		maxCursor := len(menuOptions) - 1
+		if m.screen == difficultyScreen {
+			maxCursor = len(difficultyOptions) - 1
+		}
 
-					m.game=g
-					m.screen=gameScreen
-					m.row=0
-					m.col=0
-					return m,nil
-				}
+		if m.screen == gameScreen && m.row < len(m.game.Board)-1 {
+			m.row++
+		} else if m.cursor < maxCursor {
+			m.cursor++
+		}
 
-				if m.mode == 3 {
-					if m.inputMode == "diffX" {
-						m.difficultyX = diff
-						m.inputMode = "diffO"
-						return m, nil
-					}
+	case "left":
+		if m.screen == gameScreen && m.col > 0 {
+			m.col--
+		}
 
-					if m.inputMode == "diffO" {
-						m.difficultyO = diff
-						g, err := CreateGame(m.mode, m.difficultyX, m.difficultyO, m.BoardSize)
-
-						if err != nil {
-							return m, nil
-						}
-
-						m.game = g
-						m.screen = gameScreen
-						m.row = 0
-						m.col = 0
-						return m, botPlayCmd(m.game.ID)
-
-					}
-				}
-			
-
-			case gameScreen:
-
-				g, err := MakeMove(m.game.ID, m.game.Turn, m.row, m.col)
-				if err == nil {
-					m.game = g
-				}
-			}
+	case "right":
+		if m.screen == gameScreen && m.col < len(m.game.Board)-1 {
+			m.col++
 		}
 	}
 
 	return m, nil
 }
+
+func (m model) handleRestart() (tea.Model, tea.Cmd) {
+	if m.screen == gameScreen {
+		g, err := CreateGame(m.mode, m.difficultyX, m.difficultyO, m.BoardSize)
+		if err == nil {
+			m.game = g
+			m.row, m.col = 0, 0
+		}
+	}
+	return m, nil
+}
+
+func (m model) handleBack() (tea.Model, tea.Cmd) {
+	if m.screen == gameScreen || m.screen == difficultyScreen {
+		m.screen = menuScreen
+		m.cursor = 0
+		m.game = nil
+	}
+	return m, nil
+}
+
+func (m model) handleEnter() (tea.Model, tea.Cmd) {
+
+	switch m.screen {
+
+	case menuScreen:
+		return m.handleMenuSelection()
+
+	case difficultyScreen:
+		return m.handleDifficultySelection()
+
+	case gameScreen:
+		g, err := MakeMove(m.game.ID, m.game.Turn, m.row, m.col)
+		if err == nil {
+			m.game = g
+		}
+	}
+
+	return m, nil
+}
+
+func (m model) handleMenuSelection() (tea.Model, tea.Cmd) {
+
+	switch m.cursor {
+	case 0:
+		m.mode = int(ModeHumanVsHuman)
+	case 1:
+		m.mode = int(ModeHumanVsBot)
+	case 2:
+		m.mode = int(ModeBotVsBot)
+	default:
+		return m, tea.Quit
+	}
+
+	m.screen = nameScreen
+	m.inputMode = inputName1
+	m.input = ""
+
+	if m.mode == int(ModeBotVsBot) {
+		m.screen = sizeScreen
+		m.inputMode = inputSize
+	}
+
+	return m, nil
+}
+
+func (m model) handleDifficultySelection() (tea.Model, tea.Cmd) {
+
+	diff := m.cursor + 1
+
+	if m.mode == int(ModeHumanVsBot) {
+		m.difficultyO = diff
+
+		g, err := CreateGame(m.mode, 0, m.difficultyO, m.BoardSize)
+		if err != nil {
+			return m, nil
+		}
+
+		m.game = g
+		m.screen = gameScreen
+		m.row, m.col = 0, 0
+
+		return m, nil
+	}
+
+	if m.mode == int(ModeBotVsBot) {
+
+		if m.inputMode == inputDiffX {
+			m.difficultyX = diff
+			m.inputMode = inputDiffO
+			return m, nil
+		}
+
+		if m.inputMode == inputDiffO {
+			m.difficultyO = diff
+
+			g, err := CreateGame(m.mode, m.difficultyX, m.difficultyO, m.BoardSize)
+			if err != nil {
+				return m, nil
+			}
+
+			m.game = g
+			m.screen = gameScreen
+			m.row, m.col = 0, 0
+
+			return m, botPlayCmd(m.game.ID)
+		}
+	}
+
+	return m, nil
+}
+
+

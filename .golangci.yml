@@ -6,16 +6,48 @@ run:
 
 linters:
   enable:
-    - govet
-    - errcheck
-    - staticcheck
-    - ineffassign
-    - unused
+    # Core error detection (essential for code correctness)
+    - bodyclose          # Checks HTTP response body is closed
+    - errcheck           # Checks unchecked errors
+    - gosec              # Security issues detection
+    - govet              # Go vet built-in checks
+    - ineffassign        # Detects ineffectual assignments
+    - staticcheck        # Advanced static analysis (includes gosimple, stylecheck)
+    - unused             # Detects unused code
+    
+    # Code quality (maintainability and readability)
+    - dogsled            # Checks for too many blank identifiers
+    - funlen             # Function length limits
+    - gochecknoinits     # Checks for init functions (often problematic)
+    - goconst            # Finds repeated strings that could be constants
+    - gocritic           # Opinionated checks for code improvements
+    - gocyclo            # Cyclomatic complexity
+    - lll                # Line length limit
+    - misspell           # Spelling mistakes in code/comments
+    - nakedret           # Naked returns in long functions
+    - revive             # Golint replacement with more checks
+    - unconvert          # Unnecessary type conversions
+    - unparam            # Unused function parameters
+    - whitespace         # Whitespace issues (blank lines)
+    - goprintffuncname   # Printf-style function name checks
+    - rowserrcheck       # Checks sql.Rows.Err is checked
 
 
 linters-settings:
   errcheck:
-    check-type-assertions:true
+    check-type-assertions:true  #
+  funlen:
+    lines: 100
+    statements: 75
+    ignore-comments: true
+
+  goconst:
+      # Minimal length of string constant.
+      # Default: 3
+    min-len: 3
+      # Minimum occurrences of constant string count to trigger issue.
+      # Default: 3
+    min-occurrences: 3
 
 issue:
   max-issue-per-linters: 0

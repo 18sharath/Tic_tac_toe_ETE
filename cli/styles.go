@@ -1,6 +1,6 @@
 package main
-import "github.com/charmbracelet/lipgloss"
 
+import "github.com/charmbracelet/lipgloss"
 
 var (
 	xStyle      = lipgloss.NewStyle().Foreground(lipgloss.Color("2")).Bold(true) // green
@@ -22,7 +22,7 @@ var (
 
 	selectedStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.Color("0")).
-			Background(lipgloss.Color("2")). 
+			Background(lipgloss.Color("2")).
 			Bold(true).
 			Padding(0, 4)
 

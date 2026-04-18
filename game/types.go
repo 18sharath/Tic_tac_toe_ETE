@@ -4,8 +4,13 @@ package game
 type Mode int
 
 const (
-	ModeHumanVsHuman Mode =iota+1
-	ModeHumanVsBot 
+	// ModeHumanVsHuman represents a game between two human players.
+	ModeHumanVsHuman Mode = iota + 1
+
+	// ModeHumanVsBot represents a game between a human and a bot.
+	ModeHumanVsBot
+
+	// ModeBotVsBot represents a game between two bots.
 	ModeBotVsBot
 )
 
@@ -13,7 +18,12 @@ const (
 type Difficulty int
 
 const (
-	DifficultyEasy Difficulty = iota+1
-	DifficultyMedium 
+	// DifficultyEasy represents the easy bot level.
+	DifficultyEasy Difficulty = iota + 1
+
+	// DifficultyMedium represents the medium bot level.
+	DifficultyMedium
+
+	// DifficultyHard represents the hard bot level.
 	DifficultyHard
 )

@@ -4,10 +4,10 @@ import (
 	"flag"
 	"log"
 	"net/http"
+	"time"
 
 	"tic_tac_toe/handlers"
 	"tic_tac_toe/store"
-
 	"github.com/gorilla/mux"
 )
 
@@ -36,9 +36,15 @@ func main() {
 
 	log.Printf("Server running on %v", addr)
 
-	err := http.ListenAndServe(addr, r)
+	srv:= &http.Server{
+		Addr: addr,
+		Handler: r,
+		ReadTimeout: 5*time.Second,
+		WriteTimeout: 10*time.Second,
+		IdleTimeout: 120*time.Second,
+	}
+	err := srv.ListenAndServe()
 	if err != nil {
 		log.Fatal(err)
 	}
-
 }

@@ -1,8 +1,7 @@
- // Package store contains interfaces that define game storage behavior.
+// Package store contains interfaces that define game storage behavior.
 package store
 
 import "tic_tac_toe/game"
-
 
 // GameStore defines the behavior required for storing and managing games.
 type GameStore interface {

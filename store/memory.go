@@ -1,15 +1,16 @@
 package store
 
 import (
-	"tic_tac_toe/game"
 	"sync"
+	"tic_tac_toe/game"
 )
 
-
 var (
-	// Games store all the games indexed by thier unique ID.
-	Games    = make(map[string]*game.Game)
-	Mutex    sync.RWMutex
+	// Games store all the games indexed by their unique ID.
+	Games = make(map[string]*game.Game)
+
+	// Mutex protects concurrent access to the in-memory game store.
+	Mutex sync.RWMutex
 )
 
 // MemoryStore create map to store games in memory.
@@ -33,7 +34,7 @@ func (m *MemoryStore) Create(g *game.Game) error {
 	return nil
 }
 
-//Get helps to fetch the games from the map
+// Get helps to fetch the games from the map
 func (m *MemoryStore) Get(id string) (*game.Game, bool) {
 	m.mutex.RLock()
 	defer m.mutex.RUnlock()
@@ -48,5 +49,3 @@ func (m *MemoryStore) Delete(id string) error {
 	delete(m.games, id)
 	return nil
 }
-
-

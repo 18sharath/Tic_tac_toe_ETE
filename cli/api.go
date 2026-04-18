@@ -1,3 +1,4 @@
+// Package main implements API interaction logic for the Tic Tac Toe CLI.
 package main
 
 import (
@@ -8,15 +9,15 @@ import (
 	"net/url"
 )
 
-// baseUrl helps to connects with the backend.
-var baseUrl string
+// baseURL helps to connects with the backend.
+var baseURL string
 
 // CreateGameRequest represents the playload required to create a new game.
 type CreateGameRequest struct {
-	Mode       int `json:"mode"`
+	Mode        int `json:"mode"`
 	DifficultyX int `json:"difficultyX"`
 	DifficultyO int `json:"difficultyO"`
-	BoardSize  int `json:"boardSize"`
+	BoardSize   int `json:"boardSize"`
 }
 
 // Game represents the state of the single game instance.
@@ -30,20 +31,20 @@ type Game struct {
 
 // CreateGame send the http request to create a new game.
 func CreateGame(mode int, diffX, diffO, size int) (g *Game, err error) {
-
 	reqBody := CreateGameRequest{
-		Mode:       mode,
+		Mode:        mode,
 		DifficultyX: diffX,
 		DifficultyO: diffO,
-		BoardSize:  size,
+		BoardSize:   size,
 	}
+
 
 	jsonData, err := json.Marshal(reqBody)
 	if err != nil {
 		return nil, err
 	}
 
-	u, err := url.JoinPath(baseUrl,"games")
+	u, err := url.JoinPath(baseURL, "games")
 	if err != nil {
 		return nil, err
 	}
@@ -69,8 +70,7 @@ func CreateGame(mode int, diffX, diffO, size int) (g *Game, err error) {
 
 // GetGame helps to get the game based on its ID.
 func GetGame(id string) (g *Game, err error) {
-
-	u, err := url.JoinPath(baseUrl, "games", id)
+	u, err := url.JoinPath(baseURL, "games", id)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +100,6 @@ type MoveRequest struct {
 
 // MakeMove helps to make move based on the row and col in a game.
 func MakeMove(id string, player string, row, col int) (g *Game, err error) {
-
 	req := MoveRequest{
 		Player: player,
 		Row:    row,
@@ -112,7 +111,7 @@ func MakeMove(id string, player string, row, col int) (g *Game, err error) {
 		return nil, err
 	}
 
-	u, err := url.JoinPath(baseUrl, "games", id)
+	u, err := url.JoinPath(baseURL, "games", id)
 
 	if err != nil {
 		return nil, err

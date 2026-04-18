@@ -8,7 +8,7 @@ import (
 // Mover defines an entity capable of making move on the game board
 type Mover interface {
 	// Move determines and returns the next position for given player based on current game state.
-	Move(board Board,player string) (Position, error)
+	Move(board Board, player string) (Position, error)
 }
 
 // getEmptyCells returns the empty cells in the current game
@@ -112,11 +112,12 @@ func randomMove(board Board) (Position, error) {
 	return emptyCells[rand.Intn(len(emptyCells))], nil
 }
 
-// RandomeMover implements the Mover interface
+// RandomMover implements the Mover interface and selects
+// a random empty cell from the board for making a move.
 type RandomMover struct{}
 
 // Move finds out randoms valid position and returns back
-func (r *RandomMover) Move(board Board,player string) (Position, error) {
+func (r *RandomMover) Move(board Board, player string) (Position, error) {
 	return randomMove(board)
 }
 
@@ -125,11 +126,9 @@ type DefensiveMover struct{}
 
 // Move checks for opponent winning move if it didn't find returns back position with random move
 func (d *DefensiveMover) Move(board Board, player string) (Position, error) {
-
-	
 	opponent := "O"
-	if player=="O"{
-		opponent="X"
+	if player == "O" {
+		opponent = "X"
 	}
 
 	// trying to block opponent
@@ -143,25 +142,23 @@ func (d *DefensiveMover) Move(board Board, player string) (Position, error) {
 // OffensiveMover implements the Mover interface
 type OffensiveMover struct{}
 
-// Move first check for player winning move, then checks for opponent winning move if it didnt find then returns back with random position
-func (o *OffensiveMover) Move(board Board,player string) (Position, error) {
-
-
+// Move first check for win, if not defensive, if not then random move
+func (o *OffensiveMover) Move(board Board, player string) (Position, error) {
 	opponent := "O"
 	if player == "O" {
 		opponent = "X"
 	}
 
-	//try to win
+	// try to win
 	if pos, ok := findWinningMove(board, player); ok {
 		return pos, nil
 	}
 
-	//try to block
+	// try to block
 	if pos, ok := findWinningMove(board, opponent); ok {
 		return pos, nil
 	}
 
-	//random
+	// random
 	return randomMove(board)
 }
