@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"os"
+	"path/filepath"
 	"tic_tac_toe/game"
 )
 
@@ -13,10 +14,14 @@ type FileStore struct {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 // NewFileStore helps to assign file to dataFile
 =======
 //NewFIleStore helps to assign file to dataFile
 >>>>>>> ed86cc4 (This change will update the codebase based on the comments on PR)
+=======
+// NewFileStore helps to assign file to dataFile
+>>>>>>> eb32414 (This change will make more production-ready based on golangci-lint)
 func NewFileStore(file string) *FileStore {
 	return &FileStore{
 		dataFile: file,
@@ -26,6 +31,7 @@ func NewFileStore(file string) *FileStore {
 // Create function  helps to create new file and save the game to file
 func (f *FileStore) Create(g *game.Game) (err error) {
 <<<<<<< HEAD
+<<<<<<< HEAD
 	fileName := g.ID + ".json"
 	filePath := filepath.Join(f.dataFile, fileName)
 =======
@@ -33,11 +39,16 @@ func (f *FileStore) Create(g *game.Game) (err error) {
 	filePath := f.dataFile + "/" + g.ID + ".json"
 
 >>>>>>> ed86cc4 (This change will update the codebase based on the comments on PR)
+=======
+	fileName := g.ID + ".json"
+	filePath := filepath.Join(f.dataFile, fileName)
+>>>>>>> eb32414 (This change will make more production-ready based on golangci-lint)
 	file, err := os.Create(filePath)
 
 	if err != nil {
 		return err
 	}
+<<<<<<< HEAD
 <<<<<<< HEAD
 	defer func() {
 		if cerr := file.Close(); cerr != nil && err == nil {
@@ -55,6 +66,15 @@ func (f *FileStore) Create(g *game.Game) (err error) {
 
 	err=json.NewEncoder(file).Encode(g)
 >>>>>>> ed86cc4 (This change will update the codebase based on the comments on PR)
+=======
+	defer func() {
+		if cerr := file.Close(); cerr != nil && err == nil {
+			err = cerr
+		}
+	}()
+
+	err = json.NewEncoder(file).Encode(g)
+>>>>>>> eb32414 (This change will make more production-ready based on golangci-lint)
 	return err
 }
 
@@ -71,6 +91,7 @@ func (f *FileStore) Get(id string) (*game.Game, bool) {
 	}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 	defer func() {
 		if err := file.Close(); err != nil {
 			log.Printf("Failed to close the file %s: %v", filePath, err)
@@ -79,6 +100,11 @@ func (f *FileStore) Get(id string) (*game.Game, bool) {
 		if err:=file.Close();err!=nil{
 			log.Printf("Failed to close the file %s: %v",filePath,err)
 >>>>>>> ed86cc4 (This change will update the codebase based on the comments on PR)
+=======
+	defer func() {
+		if err := file.Close(); err != nil {
+			log.Printf("Failed to close the file %s: %v", filePath, err)
+>>>>>>> eb32414 (This change will make more production-ready based on golangci-lint)
 		}
 	}()
 

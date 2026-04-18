@@ -1,8 +1,8 @@
 package main
 
 import (
-	"strings"
 	"github.com/charmbracelet/lipgloss"
+	"strings"
 )
 
 func boardWidth(size int) int {

@@ -12,13 +12,14 @@ import (
 	"net/http"
 	"tic_tac_toe/game"
 	"tic_tac_toe/store"
-
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
 
 // CreateGameRequest represents the playload required to create a new game.
 type CreateGameRequest struct {
+<<<<<<< HEAD
 <<<<<<< HEAD
 	Mode        game.Mode       `json:"mode"`
 	DifficultyX game.Difficulty `json:"difficultyX"`
@@ -30,6 +31,12 @@ type CreateGameRequest struct {
 	DifficultyO game.Difficulty `json:"difficultyO"`
 	BoardSize  int             `json:"boardSize"`
 >>>>>>> ed86cc4 (This change will update the codebase based on the comments on PR)
+=======
+	Mode        game.Mode       `json:"mode"`
+	DifficultyX game.Difficulty `json:"difficultyX"`
+	DifficultyO game.Difficulty `json:"difficultyO"`
+	BoardSize   int             `json:"boardSize"`
+>>>>>>> eb32414 (This change will make more production-ready based on golangci-lint)
 }
 
 // MoveRequest represents the payload required to make a move in a game.
@@ -41,6 +48,7 @@ type MoveRequest struct {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 // Handler handles http request using gamestore
 =======
 
@@ -48,6 +56,9 @@ type MoveRequest struct {
 =======
 // handler handles http request using gamestore
 >>>>>>> ed86cc4 (This change will update the codebase based on the comments on PR)
+=======
+// Handler handles http request using gamestore
+>>>>>>> eb32414 (This change will make more production-ready based on golangci-lint)
 type Handler struct {
 	store store.GameStore
 }
@@ -183,6 +194,7 @@ func writeJSONResponse(w http.ResponseWriter, status int, data interface{}) {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 // runBotGame plays a BotVsBot game to completion, stopping on mover error.
 func runBotGame(g *game.Game) {
 	for !g.Draw && g.Winner == "" {
@@ -224,23 +236,76 @@ func (h *Handler) MakeMoveHandler(w http.ResponseWriter, r *http.Request) {
 	if err := validateGameNotFinished(g); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
+=======
+// getGameFromRequest retrieves game from store using request ID.
+func (h *Handler) getGameFromRequest(r *http.Request) (*game.Game, error) {
+	id := mux.Vars(r)["id"]
+
+	g, ok := h.store.Get(id)
+	if !ok {
+		return nil, fmt.Errorf("game not found")
 	}
 
+	return g, nil
+}
+
+// validateGameNotFinished ensures game is still active.
+func validateGameNotFinished(g *game.Game) error {
+	if g.Winner != "" || g.Draw {
+		return fmt.Errorf("game already finished")
+>>>>>>> eb32414 (This change will make more production-ready based on golangci-lint)
+	}
+	return nil
+}
+
+<<<<<<< HEAD
 <<<<<<< HEAD
 	req, err := parseMoveRequest(r)
 =======
+=======
+// decodeMoveRequest parses the incoming move request body.
+func decodeMoveRequest(r *http.Request) (MoveRequest, error) {
+>>>>>>> eb32414 (This change will make more production-ready based on golangci-lint)
 	var req MoveRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "invalid request", http.StatusBadRequest)
+		return req, fmt.Errorf("invalid request")
+	}
+
+	return req, nil
+}
+
+// validatePlayer checks if player is valid (X or O).
+func validatePlayer(player string) error {
+	if player != "X" && player != "O" {
+		return fmt.Errorf("invalid player")
+	}
+	return nil
+}
+
+// writeJSONResponse writes JSON response to client.
+func writeJSONResponse(w http.ResponseWriter, data interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	if err:=json.NewEncoder(w).Encode(data);err!=nil{
+		http.Error(w,"failed to encode response", http.StatusInternalServerError)
+		return
+	}
+}
+
+// MakeMoveHandler handles the http request to make move.
+func (h *Handler) MakeMoveHandler(w http.ResponseWriter, r *http.Request) {
+	g, err := h.getGameFromRequest(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
-	if req.Player != "X" && req.Player != "O" {
-		http.Error(w, "invalid player", http.StatusBadRequest)
+	if err := validateGameNotFinished(g); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
+<<<<<<< HEAD
 	var err error
 
 	if g.Turn == "X" && g.PlayerX == nil {
@@ -252,23 +317,30 @@ func (h *Handler) MakeMoveHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 >>>>>>> ed86cc4 (This change will update the codebase based on the comments on PR)
+=======
+	req, err := decodeMoveRequest(r)
+>>>>>>> eb32414 (This change will make more production-ready based on golangci-lint)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 	if err := g.PlayTurn(req.Player, req.Row, req.Col); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 =======
 	g.Evaluate()
+=======
+	if err := validatePlayer(req.Player); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+>>>>>>> eb32414 (This change will make more production-ready based on golangci-lint)
 
-	if g.Winner == "" && !g.Draw {
-		if (g.Turn == "X" && g.PlayerX != nil) || (g.Turn == "O" && g.PlayerO != nil) {
-			if err := g.Maketurn(); err == nil {
-				g.Evaluate()
-			}
-		}
+	if err := g.PlayTurn(req.Player, req.Row, req.Col); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
 	if err := h.store.Create(g); err != nil {
@@ -277,11 +349,15 @@ func (h *Handler) MakeMoveHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+<<<<<<< HEAD
 	if !h.saveGame(w, g) {
 		return
 	}
 
 	writeJSONResponse(w, http.StatusOK, g)
+=======
+	writeJSONResponse(w, g)
+>>>>>>> eb32414 (This change will make more production-ready based on golangci-lint)
 }
 
 // DeleteGameHandler hanldes the http request to delete already existing game
