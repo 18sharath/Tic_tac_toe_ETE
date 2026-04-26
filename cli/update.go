@@ -69,7 +69,6 @@ func (m model) handleKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) handleInputScreen(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
-
 	switch msg.Type {
 	case tea.KeyRunes:
 		m.input += string(msg.Runes)
@@ -90,7 +89,6 @@ func (m model) handleInputScreen(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 func (m model) handleInputEnter() (tea.Model, tea.Cmd) {
 	// NAME FLOW
 	if m.screen == nameScreen {
-
 		if m.inputMode == inputName1 {
 			m.player1 = m.input
 			m.input = ""
@@ -266,7 +264,6 @@ func (m model) handleMenuSelection() (tea.Model, tea.Cmd) {
 }
 
 func (m model) handleDifficultySelection() (tea.Model, tea.Cmd) {
-
 	diff := m.cursor + 1
 
 	if m.mode == int(ModeHumanVsBot) {

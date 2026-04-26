@@ -1,3 +1,4 @@
+// Package main starts the Tic Tac Toe backend server.
 package main
 
 import (
@@ -6,15 +7,21 @@ import (
 	"net/http"
 	"time"
 
+	"tic_tac_toe/game"
 	"tic_tac_toe/handlers"
 	"tic_tac_toe/store"
+
 	"github.com/gorilla/mux"
 )
 
 func main() {
 	storeType := flag.String("store", "memory", "memory or file")
 	port := flag.String("port", "8080", "server port")
+	botserviceURL:= flag.String("bot-service-url","http://localhost:9090/move","bot service endpoint")
+
 	flag.Parse()
+
+	game.SetBotServiceURL(*botserviceURL)
 
 	var s store.GameStore
 
