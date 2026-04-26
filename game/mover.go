@@ -117,7 +117,7 @@ func randomMove(board Board) (Position, error) {
 type RandomMover struct{}
 
 // Move finds out randoms valid position and returns back
-func (r *RandomMover) Move(board Board, player string) (Position, error) {
+func (r *RandomMover) Move(board Board, _ string) (Position, error) {
 	return randomMove(board)
 }
 

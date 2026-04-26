@@ -75,9 +75,7 @@ func (m model) viewGameScreen() string {
 	)
 
 	s += "\n\n" + help
-
-	width := boardWidth(len(m.game.Board)) + 10
-	return lipgloss.Place(width, 20, lipgloss.Center, lipgloss.Center, s)
+	return lipgloss.Place(60, 20, lipgloss.Center, lipgloss.Center, s)
 }
 
 // viewDifficultyScreen renders difficulty selection UI for bots.

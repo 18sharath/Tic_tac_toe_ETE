@@ -17,6 +17,7 @@ var difficultyOptions = []string{
 	"Easy",
 	"Medium",
 	"Hard",
+	"Service Bot",
 }
 
 func initialModel() model {

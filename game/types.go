@@ -26,4 +26,7 @@ const (
 
 	// DifficultyHard represents the hard bot level.
 	DifficultyHard
+
+	// DifficultyService represents bot moves from external service.
+	DifficultyService
 )

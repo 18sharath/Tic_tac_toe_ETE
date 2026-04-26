@@ -1,14 +1,6 @@
 package main
 
-import (
-	"github.com/charmbracelet/lipgloss"
-	"strings"
-)
-
-func boardWidth(size int) int {
-	cellWidth := 7
-	return size * (cellWidth + 1)
-}
+import "strings"
 
 // drawBoard display the current state of the game.
 func drawBoard(board [][]string, row, col int) string {
@@ -26,9 +18,8 @@ func drawBoard(board [][]string, row, col int) string {
 			s += makeSeparator(size, cellWidth)
 		}
 	}
-
-	width := boardWidth(size)
-	return lipgloss.Place(width+10, 20, lipgloss.Center, lipgloss.Center, s)
+	
+	return s
 }
 
 // centerCell aligns the given content within a fixed-width cell.
