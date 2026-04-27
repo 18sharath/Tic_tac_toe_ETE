@@ -10,7 +10,6 @@ import (
 	"tic_tac_toe/game"
 	"tic_tac_toe/handlers"
 	"tic_tac_toe/store"
-
 	"github.com/gorilla/mux"
 )
 
