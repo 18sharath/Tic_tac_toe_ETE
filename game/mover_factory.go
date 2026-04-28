@@ -9,6 +9,8 @@ func NewBotMover(difficulty Difficulty) Mover {
 		return &DefensiveMover{}
 	case DifficultyHard:
 		return &OffensiveMover{}
+	case DifficultyService:
+		return &ServiceMover{}
 	default:
 		return &RandomMover{}
 	}

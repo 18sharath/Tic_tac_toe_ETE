@@ -4,16 +4,16 @@ package handlers
 
 import (
 	"encoding/json"
-	"log"
+	"fmt"
 	"net/http"
 	"tic_tac_toe/game"
 	"tic_tac_toe/store"
-	"fmt"
+
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
 
-// CreateGameRequest represents the playload required to create a new game.
+// CreateGameRequest represents the payload required to create a new game.
 type CreateGameRequest struct {
 	Mode        game.Mode       `json:"mode"`
 	DifficultyX game.Difficulty `json:"difficultyX"`
@@ -51,7 +51,7 @@ func (h *Handler) CreateGameHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.BoardSize < 0 {
+	if req.BoardSize < 3 {
 		req.BoardSize = 3
 	}
 
@@ -74,7 +74,7 @@ func (h *Handler) CreateGameHandler(w http.ResponseWriter, r *http.Request) {
 		oMover = game.NewBotMover(req.DifficultyO)
 
 	default:
-		http.Error(w, "invalid move", http.StatusBadRequest)
+		http.Error(w, "invalid game mode", http.StatusBadRequest)
 		return
 	}
 
@@ -89,16 +89,11 @@ func (h *Handler) CreateGameHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if err := h.store.Create(g); err != nil {
-		log.Println("error creating game:", err)
+		http.Error(w, "failed to create game", http.StatusInternalServerError)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-
-	if err := json.NewEncoder(w).Encode(g); err != nil {
-		http.Error(w, "failed to encode response", http.StatusInternalServerError)
-		return
-	}
+	
+	writeJSONResponse(w, http.StatusCreated, g)
 }
 
 // GetGameHandler handles the http request for get games based on gameId
@@ -117,18 +112,6 @@ func (h *Handler) GetGameHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "failed to encode response", http.StatusInternalServerError)
 		return
 	}
-}
-
-// getGameFromRequest retrieves game from store using request ID.
-func (h *Handler) getGameFromRequest(r *http.Request) (*game.Game, error) {
-	id := mux.Vars(r)["id"]
-
-	g, ok := h.store.Get(id)
-	if !ok {
-		return nil, fmt.Errorf("game not found")
-	}
-
-	return g, nil
 }
 
 // validateGameNotFinished ensures game is still active.
@@ -159,19 +142,25 @@ func validatePlayer(player string) error {
 }
 
 // writeJSONResponse writes JSON response to client.
-func writeJSONResponse(w http.ResponseWriter, data interface{}) {
+func writeJSONResponse(w http.ResponseWriter, statusCode int, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
-	if err:=json.NewEncoder(w).Encode(data);err!=nil{
-		http.Error(w,"failed to encode response", http.StatusInternalServerError)
+	w.WriteHeader(statusCode)
+
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		http.Error(w, "failed to encode response", http.StatusInternalServerError)
 		return
 	}
 }
 
 // MakeMoveHandler handles the http request to make move.
 func (h *Handler) MakeMoveHandler(w http.ResponseWriter, r *http.Request) {
-	g, err := h.getGameFromRequest(r)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+
+	id := mux.Vars(r)["id"]
+
+	g, ok := h.store.Get(id)
+
+	if !ok {
+		http.Error(w, "game not found", http.StatusNotFound)
 		return
 	}
 
@@ -201,10 +190,10 @@ func (h *Handler) MakeMoveHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSONResponse(w, g)
+	writeJSONResponse(w, http.StatusOK, g)
 }
 
-// DeleteGameHandler hanldes the http request to delete already existing game
+// DeleteGameHandler handles the http request to delete already existing game
 func (h *Handler) DeleteGameHandler(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 
