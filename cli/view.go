@@ -150,3 +150,4 @@ func (m model) viewNameScreen() string {
 		titleStyle.Render(label+m.input),
 	)
 }
+
