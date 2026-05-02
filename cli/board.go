@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/charmbracelet/lipgloss"
 	"strings"
+
+	"github.com/charmbracelet/lipgloss"
 )
 
 func boardWidth(size int) int {
@@ -67,7 +68,7 @@ func renderCell(value string, i, j, cursorRow, cursorCol int) string {
 // buildRow constructs a single row of the board by rendering each cell,
 // applying cursor highlighting, and aligning content within fixed-width cells.
 func buildRow(board [][]string, i, cursorRow, cursorCol, cellWidth int) string {
-	size := len(board)
+	size := len(board[i])
 	rowStr := ""
 
 	for j := 0; j < size; j++ {
@@ -109,4 +110,3 @@ func makePaddingRow(size, cellWidth int) string {
 
 	return line + "\n"
 }
-

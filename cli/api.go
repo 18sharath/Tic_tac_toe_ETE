@@ -51,7 +51,7 @@ func CreateGame(mode int, diffX, diffO, size int) (g *Game, err error) {
 
 	resp, err := http.Post(u, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
-		log.Println("response")
+		log.Println("http request failed:", err)
 		return nil, err
 	}
 

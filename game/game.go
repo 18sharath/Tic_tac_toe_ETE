@@ -94,7 +94,7 @@ func (g *Game) Maketurn() error {
 	if g.Board[pos.Row][pos.Col] != "" {
 		return errors.New("invalid move")
 	}
-	g.Board[pos.Row][pos.Col] = g.Turn
+	g.Board = ApplyMove(g.Board, pos, g.Turn)
 	g.toggleTurn()
 	return nil
 }
@@ -244,7 +244,7 @@ func (g *Game) MakeMove(player string, row, col int) error {
 		return errors.New("cell already occupied")
 	}
 
-	g.Board[row][col] = player
+	g.Board = ApplyMove(g.Board, Position{Row: row, Col: col}, player)
 
 	g.toggleTurn()
 	return nil

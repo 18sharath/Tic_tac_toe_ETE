@@ -74,7 +74,7 @@ func (h *Handler) CreateGameHandler(w http.ResponseWriter, r *http.Request) {
 		oMover = game.NewBotMover(req.DifficultyO)
 
 	default:
-		http.Error(w, "invalid move", http.StatusBadRequest)
+		http.Error(w, "invalid mode", http.StatusBadRequest)
 		return
 	}
 
