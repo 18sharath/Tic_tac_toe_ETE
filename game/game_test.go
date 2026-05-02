@@ -1,8 +1,9 @@
 package game
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewBoard(t *testing.T) {
@@ -12,6 +13,20 @@ func TestNewBoard(t *testing.T) {
 	assert.Equal(t, 3, len(board[0]))
 	assert.Equal(t, "", board[0][0])
 	assert.Equal(t, "", board[2][2])
+}
+
+func TestApplyMoveReturnsNewBoard(t *testing.T) {
+	board := NewBoard(3)
+	board[0][0] = "X"
+
+	updated := ApplyMove(board, Position{Row: 1, Col: 1}, "O")
+
+	assert.Equal(t, "X", board[0][0])
+	assert.Equal(t, "", board[1][1])
+	assert.Equal(t, "O", updated[1][1])
+
+	updated[0][0] = "Z"
+	assert.Equal(t, "X", board[0][0])
 }
 
 func TestNewGame(t *testing.T) {
@@ -46,6 +61,28 @@ func TestMakeMoveSuccess(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "X", g.Board[0][0])
 	assert.Equal(t, "O", g.Turn)
+}
+
+func TestMakeMoveDoesNotMutateOriginalBoardAlias(t *testing.T) {
+	g := NewGame(
+		"1",
+		3,
+		ModeHumanVsHuman,
+		DifficultyEasy,
+		nil,
+		nil,
+	)
+
+	original := g.Board
+
+	err := g.MakeMove("X", 0, 0)
+
+	assert.NoError(t, err)
+	assert.Equal(t, "", original[0][0])
+	assert.Equal(t, "X", g.Board[0][0])
+
+	g.Board[0][0] = "O"
+	assert.Equal(t, "", original[0][0])
 }
 
 func TestMakeMoveWrongTurn(t *testing.T) {

@@ -35,6 +35,31 @@ func TestMemoryStoreCreateAndGet(t *testing.T) {
 	assert.Equal(t, "game-1", result.ID)
 }
 
+func TestMemoryStoreReturnsCopies(t *testing.T) {
+	store := NewMemoryStore()
+
+	g := createTestGame("copy-game")
+	g.Board[0][0] = "X"
+
+	err := store.Create(g)
+
+	assert.NoError(t, err)
+
+	result, ok := store.Get("copy-game")
+
+	assert.True(t, ok)
+	assert.NotNil(t, result)
+	assert.Equal(t, "X", result.Board[0][0])
+
+	result.Board[0][0] = "O"
+
+	result2, ok := store.Get("copy-game")
+
+	assert.True(t, ok)
+	assert.Equal(t, "X", result2.Board[0][0])
+	assert.NotSame(t, result, result2)
+}
+
 func TestMemoryStoreGetNotFound(t *testing.T) {
 	store := NewMemoryStore()
 

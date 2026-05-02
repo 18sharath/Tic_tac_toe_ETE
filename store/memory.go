@@ -30,7 +30,10 @@ func NewMemoryStore() *MemoryStore {
 func (m *MemoryStore) Create(g *game.Game) error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
-	m.games[g.ID] = g
+	if g == nil {
+		return nil
+	}
+	m.games[g.ID] = g.Clone()
 	return nil
 }
 
@@ -39,7 +42,10 @@ func (m *MemoryStore) Get(id string) (*game.Game, bool) {
 	m.mutex.RLock()
 	defer m.mutex.RUnlock()
 	g, ok := m.games[id]
-	return g, ok
+	if !ok || g == nil {
+		return nil, ok
+	}
+	return g.Clone(), ok
 }
 
 // Delete helps to remove the games from the map

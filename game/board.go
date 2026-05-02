@@ -18,3 +18,23 @@ func NewBoard(size int) Board {
 	}
 	return board
 }
+
+// ApplyMove returns a new Board with the given move applied.
+func ApplyMove(b Board, pos Position, player string) Board {
+	size := len(b)
+	if size == 0 {
+		return b
+	}
+
+	nb := make(Board, size)
+	for i := range b {
+		nb[i] = make([]string, len(b[i]))
+		copy(nb[i], b[i])
+	}
+
+	if pos.Row >= 0 && pos.Row < size && pos.Col >= 0 && pos.Col < len(nb[pos.Row]) {
+		nb[pos.Row][pos.Col] = player
+	}
+
+	return nb
+}
