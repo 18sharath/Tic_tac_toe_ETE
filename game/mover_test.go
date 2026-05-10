@@ -52,6 +52,17 @@ func TestIsWinningMoveDiagonal(t *testing.T) {
 	assert.True(t, result)
 }
 
+func TestIsWinningMoveAntiDiagonal(t *testing.T) {
+	board := Board{
+		{"", "O", ""},
+		{"", "X", ""},
+		{"X", "O", ""},
+	}
+
+	result := isWinningMove(board, 0, 2, "X")
+
+	assert.True(t, result)
+}
 func TestFindWinningMove(t *testing.T) {
 	board := Board{
 		{"O", "O", ""},
@@ -79,7 +90,6 @@ func TestRandomMoverMove(t *testing.T) {
 	assert.NoError(t, err)
 	assert.True(t, board[pos.Row][pos.Col] == "")
 }
-
 
 func TestRandomMoverNoMovesLeft(t *testing.T) {
 	board := Board{
@@ -144,3 +154,32 @@ func TestOffensiveMoverBlocksIfNoWin(t *testing.T) {
 	assert.Equal(t, 2, pos.Col)
 }
 
+func TestOffensiveMoverRandomFallback(t *testing.T) {
+	board := Board{
+		{"X", "", ""},
+		{"", "O", ""},
+		{"", "", "X"},
+	}
+
+	mover := &OffensiveMover{}
+
+	pos, err := mover.Move(board, "O")
+
+	assert.NoError(t, err)
+	assert.Equal(t, "", board[pos.Row][pos.Col])
+}
+
+func TestDefensiveMoverRandomFallback(t *testing.T) {
+	board := Board{
+		{"X", "", ""},
+		{"", "O", ""},
+		{"", "", ""},
+	}
+
+	mover := &DefensiveMover{}
+
+	pos, err := mover.Move(board, "O")
+
+	assert.NoError(t, err)
+	assert.Equal(t, "", board[pos.Row][pos.Col])
+}

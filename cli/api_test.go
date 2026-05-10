@@ -82,3 +82,96 @@ func TestMakeMoveSuccess(t *testing.T) {
 	assert.Equal(t, "xyz", game.ID)
 	assert.Equal(t, "O", game.Turn)
 }
+
+func TestCreateGameHTTPFailure(t *testing.T) {
+	baseURL = "http://127.0.0.1:1"
+
+	game, err := CreateGame(1, 1, 1, 3)
+
+	assert.Error(t, err)
+	assert.Nil(t, game)
+}
+
+func TestCreateGameInvalidBaseURL(t *testing.T) {
+	baseURL = "://bad url"
+
+	game, err := CreateGame(1, 1, 1, 3)
+
+	assert.Error(t, err)
+	assert.Nil(t, game)
+}
+
+func TestCreateGameBadJSON(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte("not json {{{"))
+	}))
+	defer server.Close()
+
+	baseURL = server.URL
+	game, err := CreateGame(1, 1, 1, 3)
+
+	assert.Error(t, err)
+	assert.Nil(t, game)
+}
+
+func TestGetGameHTTPFailure(t *testing.T) {
+	baseURL = "http://127.0.0.1:1"
+
+	game, err := GetGame("some-id")
+
+	assert.Error(t, err)
+	assert.Nil(t, game)
+}
+
+func TestGetGameInvalidBaseURL(t *testing.T) {
+	baseURL = "://bad url"
+
+	game, err := GetGame("some-id")
+
+	assert.Error(t, err)
+	assert.Nil(t, game)
+}
+
+func TestGetGameBadJSON(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte("not json {{{"))
+	}))
+	defer server.Close()
+
+	baseURL = server.URL
+	game, err := GetGame("some-id")
+
+	assert.Error(t, err)
+	assert.Nil(t, game)
+}
+
+func TestMakeMoveHTTPFailure(t *testing.T) {
+	baseURL = "http://127.0.0.1:1"
+
+	game, err := MakeMove("id", "X", 0, 0)
+
+	assert.Error(t, err)
+	assert.Nil(t, game)
+}
+
+func TestMakeMoveInvalidBaseURL(t *testing.T) {
+	baseURL = "://bad url"
+
+	game, err := MakeMove("id", "X", 0, 0)
+
+	assert.Error(t, err)
+	assert.Nil(t, game)
+}
+
+func TestMakeMoveBadJSON(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte("not json {{{"))
+	}))
+	defer server.Close()
+
+	baseURL = server.URL
+	game, err := MakeMove("id", "X", 0, 0)
+
+	assert.Error(t, err)
+	assert.Nil(t, game)
+}

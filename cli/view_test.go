@@ -146,3 +146,51 @@ func TestViewNameScreen(t *testing.T) {
 
 	assert.Contains(t, result, "Player 2")
 }
+
+func TestViewRoutingGameScreen(t *testing.T) {
+	m := model{
+		screen: gameScreen,
+		game: &Game{
+			Turn:  "X",
+			Board: [][]string{{"", "", ""}, {"", "", ""}, {"", "", ""}},
+		},
+	}
+
+	result := m.View()
+
+	assert.Contains(t, result, "TIC TAC TOE")
+}
+
+func TestViewRoutingDefault(t *testing.T) {
+	m := model{screen: screen(999)}
+
+	result := m.View()
+
+	assert.Equal(t, "", result)
+}
+
+func TestViewDifficultyScreenBotVsBotDiffX(t *testing.T) {
+	m := model{
+		screen:    difficultyScreen,
+		cursor:    0,
+		mode:      int(ModeBotVsBot),
+		inputMode: inputDiffX,
+	}
+
+	result := m.viewDifficultyScreen()
+
+	assert.Contains(t, result, "Bot X")
+}
+
+func TestViewDifficultyScreenBotVsBotDiffO(t *testing.T) {
+	m := model{
+		screen:    difficultyScreen,
+		cursor:    0,
+		mode:      int(ModeBotVsBot),
+		inputMode: inputDiffO,
+	}
+
+	result := m.viewDifficultyScreen()
+
+	assert.Contains(t, result, "Bot O")
+}

@@ -4,11 +4,11 @@ package handlers
 
 import (
 	"encoding/json"
-	"log"
+	"fmt"
 	"net/http"
 	"tic_tac_toe/game"
 	"tic_tac_toe/store"
-	"fmt"
+
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
@@ -51,7 +51,7 @@ func (h *Handler) CreateGameHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.BoardSize < 0 {
+	if req.BoardSize < 3 {
 		req.BoardSize = 3
 	}
 
@@ -81,24 +81,12 @@ func (h *Handler) CreateGameHandler(w http.ResponseWriter, r *http.Request) {
 	g := game.NewGame(id, req.BoardSize, req.Mode, req.DifficultyO, xMover, oMover)
 
 	if req.Mode == game.ModeBotVsBot {
-		for !g.Draw && g.Winner == "" {
-			if err := g.Maketurn(); err != nil {
-				break
-			}
-			g.Evaluate()
-		}
+		runBotGame(g)
 	}
-	if err := h.store.Create(g); err != nil {
-		log.Println("error creating game:", err)
+	if !h.saveGame(w, g) {
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-
-	if err := json.NewEncoder(w).Encode(g); err != nil {
-		http.Error(w, "failed to encode response", http.StatusInternalServerError)
-		return
-	}
+	writeJSONResponse(w, http.StatusCreated, g)
 }
 
 // GetGameHandler handles the http request for get games based on gameId
@@ -111,12 +99,7 @@ func (h *Handler) GetGameHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "game not found", http.StatusNotFound)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-
-	if err := json.NewEncoder(w).Encode(g); err != nil {
-		http.Error(w, "failed to encode response", http.StatusInternalServerError)
-		return
-	}
+	writeJSONResponse(w, http.StatusOK, g)
 }
 
 // getGameFromRequest retrieves game from store using request ID.
@@ -158,13 +141,42 @@ func validatePlayer(player string) error {
 	return nil
 }
 
-// writeJSONResponse writes JSON response to client.
-func writeJSONResponse(w http.ResponseWriter, data interface{}) {
+// writeJSONResponse writes a JSON response with the given status code.
+func writeJSONResponse(w http.ResponseWriter, status int, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
-	if err:=json.NewEncoder(w).Encode(data);err!=nil{
-		http.Error(w,"failed to encode response", http.StatusInternalServerError)
+	w.WriteHeader(status)
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		http.Error(w, "failed to encode response", http.StatusInternalServerError)
 		return
 	}
+}
+
+// runBotGame plays a BotVsBot game to completion, stopping on mover error.
+func runBotGame(g *game.Game) {
+	for !g.Draw && g.Winner == "" {
+		if err := g.Maketurn(); err != nil {
+			break
+		}
+		g.Evaluate()
+	}
+}
+
+// saveGame persists the game and writes a 500 error on failure.
+func (h *Handler) saveGame(w http.ResponseWriter, g *game.Game) bool {
+	if err := h.store.Create(g); err != nil {
+		http.Error(w, "failed to save game", http.StatusInternalServerError)
+		return false
+	}
+	return true
+}
+
+// parseMoveRequest decodes and validates the move request body.
+func parseMoveRequest(r *http.Request) (MoveRequest, error) {
+	req, err := decodeMoveRequest(r)
+	if err != nil {
+		return req, err
+	}
+	return req, validatePlayer(req.Player)
 }
 
 // MakeMoveHandler handles the http request to make move.
@@ -180,13 +192,8 @@ func (h *Handler) MakeMoveHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	req, err := decodeMoveRequest(r)
+	req, err := parseMoveRequest(r)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	if err := validatePlayer(req.Player); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -196,12 +203,11 @@ func (h *Handler) MakeMoveHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.store.Create(g); err != nil {
-		http.Error(w, "failed to save game", http.StatusInternalServerError)
+	if !h.saveGame(w, g) {
 		return
 	}
 
-	writeJSONResponse(w, g)
+	writeJSONResponse(w, http.StatusOK, g)
 }
 
 // DeleteGameHandler hanldes the http request to delete already existing game

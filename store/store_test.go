@@ -143,3 +143,74 @@ func TestFileStoreDeleteMissingFile(t *testing.T) {
 	assert.Error(t, err)
 	assert.True(t, os.IsNotExist(err))
 }
+
+func TestMemoryStoreCreateNilGame(t *testing.T) {
+	store := NewMemoryStore()
+
+	err := store.Create(nil)
+
+	assert.NoError(t, err)
+}
+
+func TestFileStoreCreateFailure(t *testing.T) {
+	store := NewFileStore("/nonexistent/dir/that/does/not/exist")
+
+	g := createTestGame("fail-game")
+
+	err := store.Create(g)
+
+	assert.Error(t, err)
+}
+
+func TestFileStoreGetCorruptJSON(t *testing.T) {
+	tempDir := t.TempDir()
+
+	store := NewFileStore(tempDir)
+
+	corruptPath := tempDir + "/corrupt-game.json"
+	err := os.WriteFile(corruptPath, []byte("this is not valid json {{{"), 0644)
+	assert.NoError(t, err)
+
+	result, ok := store.Get("corrupt-game")
+
+	assert.False(t, ok)
+	assert.Nil(t, result)
+}
+
+func TestFileStoreGetHumanVsBot(t *testing.T) {
+	tempDir := t.TempDir()
+
+	store := NewFileStore(tempDir)
+
+	g := game.NewGame("hvb-game", 3, game.ModeHumanVsBot, game.DifficultyMedium, nil, nil)
+
+	err := store.Create(g)
+	assert.NoError(t, err)
+
+	result, ok := store.Get("hvb-game")
+
+	assert.True(t, ok)
+	assert.NotNil(t, result)
+	assert.Nil(t, result.PlayerX)
+	assert.NotNil(t, result.PlayerO)
+	assert.Equal(t, game.ModeHumanVsBot, result.Mode)
+}
+
+func TestFileStoreGetBotVsBot(t *testing.T) {
+	tempDir := t.TempDir()
+
+	store := NewFileStore(tempDir)
+
+	g := game.NewGame("bvb-game", 3, game.ModeBotVsBot, game.DifficultyHard, nil, nil)
+
+	err := store.Create(g)
+	assert.NoError(t, err)
+
+	result, ok := store.Get("bvb-game")
+
+	assert.True(t, ok)
+	assert.NotNil(t, result)
+	assert.NotNil(t, result.PlayerX)
+	assert.NotNil(t, result.PlayerO)
+	assert.Equal(t, game.ModeBotVsBot, result.Mode)
+}

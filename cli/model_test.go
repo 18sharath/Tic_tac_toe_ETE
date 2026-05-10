@@ -59,3 +59,19 @@ func TestModelFieldAssignment(t *testing.T) {
 	assert.Equal(t, 1, m.row)
 	assert.Equal(t, 2, m.col)
 }
+
+func TestInitialModel(t *testing.T) {
+	m := initialModel()
+
+	assert.Equal(t, menuScreen, m.screen)
+	assert.Equal(t, 0, m.cursor)
+	assert.Nil(t, m.game)
+}
+
+func TestModelInit(t *testing.T) {
+	m := model{}
+
+	cmd := m.Init()
+
+	assert.Nil(t, cmd)
+}

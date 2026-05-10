@@ -8,6 +8,7 @@ import (
 type Game struct {
 	ID         string     `json:"id"`
 	Board      Board      `json:"board"`
+	BoardSize  int        `json:"boardSize"`
 	PlayerX    Mover      `json:"-"`
 	PlayerO    Mover      `json:"-"`
 	Turn       string     `json:"turn"`
@@ -22,6 +23,7 @@ func NewGame(id string, size int, mode Mode, difficulty Difficulty, xMover Mover
 	return &Game{
 		ID:         id,
 		Board:      NewBoard(size),
+		BoardSize:  size,
 		PlayerX:    xMover,
 		PlayerO:    oMover,
 		Turn:       "X",
@@ -31,19 +33,15 @@ func NewGame(id string, size int, mode Mode, difficulty Difficulty, xMover Mover
 }
 
 // PlayTurn processes a move for both human and bot players.
-// It handles human input, triggers a bot move if required,
-// and evaluates the game state after each move.
-func (g *Game) PlayTurn(player string, row, col int) error{
+func (g *Game) PlayTurn(player string, row, col int) error {
 	if g.Winner != "" || g.Draw {
 		return errors.New("game already finished")
 	}
-
 
 	if player != g.Turn {
 		return errors.New("not your turn")
 	}
 
-	
 	if (g.Turn == "X" && g.PlayerX == nil) || (g.Turn == "O" && g.PlayerO == nil) {
 		if err := g.MakeMove(player, row, col); err != nil {
 			return err
@@ -51,11 +49,11 @@ func (g *Game) PlayTurn(player string, row, col int) error{
 
 		g.Evaluate()
 	} else {
-			if err := g.Maketurn(); err != nil {
+		if err := g.Maketurn(); err != nil {
 			return err
 		}
 
-		g.Evaluate()	
+		g.Evaluate()
 	}
 
 	if g.Winner != "" || g.Draw {
@@ -72,7 +70,6 @@ func (g *Game) PlayTurn(player string, row, col int) error{
 
 	return nil
 }
-
 
 // Maketurn helps to place bot player move in game board
 func (g *Game) Maketurn() error {
