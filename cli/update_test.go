@@ -10,14 +10,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func startGameServer(t *testing.T) *httptest.Server {
+func startGameServer(t *testing.T) {
 	t.Helper()
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		_ = json.NewEncoder(w).Encode(Game{ID: "g1", Turn: "X", Board: [][]string{{"", "", ""}, {"", "", ""}, {"", "", ""}}})
 	}))
 	t.Cleanup(srv.Close)
 	baseURL = srv.URL
-	return srv
 }
 
 func TestUpdateBotMsg(t *testing.T) {
@@ -228,7 +227,7 @@ func TestStartGameAfterSizeBotVsBot(t *testing.T) {
 }
 
 func TestStartGameAfterSizeCreateError(t *testing.T) {
-	baseURL = "http://127.0.0.1:1"
+	baseURL = testUnreachableURL
 	m := model{mode: int(ModeHumanVsHuman), BoardSize: 3}
 
 	newModel, cmd := m.startGameAfterSize()
@@ -364,7 +363,7 @@ func TestHandleDifficultySelectionHumanVsBot(t *testing.T) {
 }
 
 func TestHandleDifficultySelectionHumanVsBotError(t *testing.T) {
-	baseURL = "http://127.0.0.1:1"
+	baseURL = testUnreachableURL
 	m := model{mode: int(ModeHumanVsBot), cursor: 0, BoardSize: 3}
 
 	newModel, cmd := m.handleDifficultySelection()
@@ -395,7 +394,7 @@ func TestHandleDifficultySelectionBotVsBotDiffO(t *testing.T) {
 }
 
 func TestHandleDifficultySelectionBotVsBotDiffOError(t *testing.T) {
-	baseURL = "http://127.0.0.1:1"
+	baseURL = testUnreachableURL
 	m := model{mode: int(ModeBotVsBot), cursor: 0, inputMode: inputDiffO, difficultyX: 1, BoardSize: 3}
 
 	newModel, cmd := m.handleDifficultySelection()
@@ -414,7 +413,7 @@ func TestHandleDifficultySelectionOtherMode(t *testing.T) {
 }
 
 func TestBotPlayCmdSuccess(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		_ = json.NewEncoder(w).Encode(Game{ID: "bot1", Winner: "X"})
 	}))
 	defer server.Close()
@@ -429,7 +428,7 @@ func TestBotPlayCmdSuccess(t *testing.T) {
 }
 
 func TestBotPlayCmdGetGameError(t *testing.T) {
-	baseURL = "http://127.0.0.1:1"
+	baseURL = testUnreachableURL
 
 	cmd := botPlayCmd("any-id")
 	msg := cmd()

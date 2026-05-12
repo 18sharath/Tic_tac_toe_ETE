@@ -10,23 +10,25 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func main() {
-	port := flag.String("port", "9090", "botservice port")
-	flag.Parse()
-
-	addr := ":" + *port
-
+// newServer builds and returns the configured HTTP server for the given address.
+func newServer(addr string) *http.Server {
 	r := mux.NewRouter()
-
 	r.HandleFunc("/move", moveHandler)
 
-	srv := &http.Server{
+	return &http.Server{
 		Addr:         addr,
 		Handler:      r,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  120 * time.Second,
 	}
+}
+
+func main() {
+	port := flag.String("botservice-port", "9090", "botservice port")
+	addr := ":" + *port
+
+	srv := newServer(addr)
 
 	log.Printf("bot service listening on %s\n", addr)
 

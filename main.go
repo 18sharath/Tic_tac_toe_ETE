@@ -54,11 +54,4 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-
->>>>>>> ed86cc4 (This change will update the codebase based on the comments on PR)
-=======
->>>>>>> eb32414 (This change will make more production-ready based on golangci-lint)
 }

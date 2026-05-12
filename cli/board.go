@@ -100,3 +100,9 @@ func makePaddingRow(size, cellWidth int) string {
 
 	return line + "\n"
 }
+
+// boardWidth calculates the total width of the board based on size and cell width.
+func boardWidth(size int) int {
+	const cellWidth = 7
+	return size * (cellWidth + 1)
+}

@@ -9,6 +9,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const (
+	testUnreachableURL = "http://127.0.0.1:1"
+	testBadURL         = "://bad url"
+)
+
 func TestCreateGameSuccess(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, "/games", r.URL.Path)
@@ -25,9 +30,7 @@ func TestCreateGameSuccess(t *testing.T) {
 		}
 
 		_ = json.NewEncoder(w).Encode(resp)
-
 	}))
-
 	defer server.Close()
 
 	baseURL = server.URL
@@ -84,7 +87,7 @@ func TestMakeMoveSuccess(t *testing.T) {
 }
 
 func TestCreateGameHTTPFailure(t *testing.T) {
-	baseURL = "http://127.0.0.1:1"
+	baseURL = testUnreachableURL
 
 	game, err := CreateGame(1, 1, 1, 3)
 
@@ -93,7 +96,7 @@ func TestCreateGameHTTPFailure(t *testing.T) {
 }
 
 func TestCreateGameInvalidBaseURL(t *testing.T) {
-	baseURL = "://bad url"
+	baseURL = testBadURL
 
 	game, err := CreateGame(1, 1, 1, 3)
 
@@ -102,7 +105,7 @@ func TestCreateGameInvalidBaseURL(t *testing.T) {
 }
 
 func TestCreateGameBadJSON(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		_, _ = w.Write([]byte("not json {{{"))
 	}))
 	defer server.Close()
@@ -115,7 +118,7 @@ func TestCreateGameBadJSON(t *testing.T) {
 }
 
 func TestGetGameHTTPFailure(t *testing.T) {
-	baseURL = "http://127.0.0.1:1"
+	baseURL = testUnreachableURL
 
 	game, err := GetGame("some-id")
 
@@ -124,7 +127,7 @@ func TestGetGameHTTPFailure(t *testing.T) {
 }
 
 func TestGetGameInvalidBaseURL(t *testing.T) {
-	baseURL = "://bad url"
+	baseURL = testBadURL
 
 	game, err := GetGame("some-id")
 
@@ -133,7 +136,7 @@ func TestGetGameInvalidBaseURL(t *testing.T) {
 }
 
 func TestGetGameBadJSON(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		_, _ = w.Write([]byte("not json {{{"))
 	}))
 	defer server.Close()
@@ -146,7 +149,7 @@ func TestGetGameBadJSON(t *testing.T) {
 }
 
 func TestMakeMoveHTTPFailure(t *testing.T) {
-	baseURL = "http://127.0.0.1:1"
+	baseURL = testUnreachableURL
 
 	game, err := MakeMove("id", "X", 0, 0)
 
@@ -155,7 +158,7 @@ func TestMakeMoveHTTPFailure(t *testing.T) {
 }
 
 func TestMakeMoveInvalidBaseURL(t *testing.T) {
-	baseURL = "://bad url"
+	baseURL = testBadURL
 
 	game, err := MakeMove("id", "X", 0, 0)
 
@@ -164,7 +167,7 @@ func TestMakeMoveInvalidBaseURL(t *testing.T) {
 }
 
 func TestMakeMoveBadJSON(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		_, _ = w.Write([]byte("not json {{{"))
 	}))
 	defer server.Close()

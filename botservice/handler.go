@@ -2,8 +2,8 @@ package main
 
 import (
 	"encoding/json"
-	"net/http"
 	"errors"
+	"net/http"
 )
 
 func moveHandler(w http.ResponseWriter, r *http.Request) {
@@ -23,7 +23,12 @@ func moveHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	move := bestMove(req.Board)
+	player := req.Player
+	if player == "" {
+		player = "O"
+	}
+
+	move := bestMove(req.Board, player)
 	if move.Row == -1 {
 		http.Error(w, "no moves available", http.StatusUnprocessableEntity)
 		return

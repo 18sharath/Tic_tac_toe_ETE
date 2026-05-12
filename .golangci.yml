@@ -1,4 +1,3 @@
-
 version: "2"
 
 run:
@@ -49,7 +48,7 @@ linters-settings:
       # Default: 3
     min-occurrences: 3
 
-issue:
+issues:
   max-issue-per-linters: 0
   max-same-issue: 0
   uniq-by-line: true

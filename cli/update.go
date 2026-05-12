@@ -23,6 +23,7 @@ func botPlayCmd(id string) tea.Cmd {
 		return botMsg{game: g}
 	}
 }
+
 // Update processes a Bubble Tea message and returns the updated model.
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
@@ -85,7 +86,6 @@ func (m model) handleInputScreen(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-
 func (m model) handleInputEnter() (tea.Model, tea.Cmd) {
 	// NAME FLOW
 	if m.screen == nameScreen {
@@ -133,9 +133,7 @@ func (m model) handleInputEnter() (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-
 func (m model) startGameAfterSize() (tea.Model, tea.Cmd) {
-
 	if m.mode == int(ModeHumanVsBot) {
 		m.screen = difficultyScreen
 		m.cursor = 0
@@ -162,9 +160,7 @@ func (m model) startGameAfterSize() (tea.Model, tea.Cmd) {
 }
 
 func (m model) handleMovement(key string) (tea.Model, tea.Cmd) {
-
 	switch key {
-
 	case "up":
 		if m.screen == gameScreen && m.row > 0 {
 			m.row--
@@ -219,9 +215,7 @@ func (m model) handleBack() (tea.Model, tea.Cmd) {
 }
 
 func (m model) handleEnter() (tea.Model, tea.Cmd) {
-
 	switch m.screen {
-
 	case menuScreen:
 		return m.handleMenuSelection()
 
@@ -239,7 +233,6 @@ func (m model) handleEnter() (tea.Model, tea.Cmd) {
 }
 
 func (m model) handleMenuSelection() (tea.Model, tea.Cmd) {
-
 	switch m.cursor {
 	case 0:
 		m.mode = int(ModeHumanVsHuman)
@@ -282,7 +275,6 @@ func (m model) handleDifficultySelection() (tea.Model, tea.Cmd) {
 	}
 
 	if m.mode == int(ModeBotVsBot) {
-
 		if m.inputMode == inputDiffX {
 			m.difficultyX = diff
 			m.inputMode = inputDiffO
@@ -307,5 +299,3 @@ func (m model) handleDifficultySelection() (tea.Model, tea.Cmd) {
 
 	return m, nil
 }
-
-

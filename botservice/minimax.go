@@ -1,11 +1,21 @@
 package main
 
 import "math"
+
 const (
 	scoreWin  = 10
 	scoreLose = -10
 	scoreInf  = math.MaxInt
 )
+
+var botPlayer = "O"
+
+func opponent(player string) string {
+	if player == "X" {
+		return "O"
+	}
+	return "X"
+}
 
 func checkWinner(board [][]string) string {
 	size := len(board)
@@ -95,10 +105,10 @@ func minimax(board [][]string, isMaximizing bool, alpha, beta int) int {
 
 func terminalScore(board [][]string) (int, bool) {
 	winner := checkWinner(board)
-	if winner == "O" {
+	if winner == botPlayer {
 		return scoreWin, true
 	}
-	if winner == "X" {
+	if winner == opponent(botPlayer) {
 		return scoreLose, true
 	}
 	if isBoardFull(board) {
@@ -112,7 +122,7 @@ func maximizingScore(board [][]string, alpha, beta int) int {
 	for i := range board {
 		for j := range board[i] {
 			if board[i][j] == "" {
-				board[i][j] = "O"
+				board[i][j] = botPlayer
 				score := minimax(board, false, alpha, beta)
 				board[i][j] = ""
 				if score > best {
@@ -135,7 +145,7 @@ func minimizingScore(board [][]string, alpha, beta int) int {
 	for i := range board {
 		for j := range board[i] {
 			if board[i][j] == "" {
-				board[i][j] = "X"
+				board[i][j] = opponent(botPlayer)
 				score := minimax(board, true, alpha, beta)
 				board[i][j] = ""
 				if score < best {
@@ -153,14 +163,15 @@ func minimizingScore(board [][]string, alpha, beta int) int {
 	return best
 }
 
-func bestMove(board [][]string) moveResponse {
+func bestMove(board [][]string, player string) moveResponse {
+	botPlayer = player
 	best := -scoreInf
 	move := moveResponse{Row: -1, Col: -1}
 
 	for i := range board {
 		for j := range board[i] {
 			if board[i][j] == "" {
-				board[i][j] = "O"
+				board[i][j] = botPlayer
 				score := minimax(board, false, -scoreInf, scoreInf)
 				board[i][j] = ""
 				if score > best {

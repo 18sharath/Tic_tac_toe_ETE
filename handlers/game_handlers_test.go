@@ -15,6 +15,20 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const (
+	createGameBody = `{
+		"mode": 1,
+		"difficultyX": 1,
+		"difficultyO": 1,
+		"boardSize": 3
+	}`
+	makeMoveBody = `{
+		"player": "X",
+		"row": 0,
+		"col": 0
+	}`
+)
+
 type failingResponseWriter struct {
 	header     http.Header
 	statusCode int
@@ -52,14 +66,7 @@ func TestValidatePlayer(t *testing.T) {
 func TestCreateGameHandlerSuccess(t *testing.T) {
 	h := setupTestHandler()
 
-	body := `{
-		"mode": 1,
-		"difficultyX": 1,
-		"difficultyO": 1,
-		"boardSize": 3
-	}`
-
-	req := httptest.NewRequest(http.MethodPost, "/games", bytes.NewBufferString(body))
+	req := httptest.NewRequest(http.MethodPost, "/games", bytes.NewBufferString(createGameBody))
 	rec := httptest.NewRecorder()
 
 	h.CreateGameHandler(rec, req)
@@ -96,7 +103,7 @@ func TestCreateGameHandlerInvalidMode(t *testing.T) {
 	h.CreateGameHandler(rec, req)
 
 	assert.Equal(t, http.StatusBadRequest, rec.Code)
-	assert.Contains(t, rec.Body.String(), "invalid mode")
+	assert.Contains(t, rec.Body.String(), "invalid game mode")
 }
 
 func TestCreateGameHandlerInvalidRequestBody(t *testing.T) {
@@ -217,13 +224,7 @@ func TestMakeMoveHandlerSuccess(t *testing.T) {
 
 	_ = h.store.Create(g)
 
-	body := `{
-		"player": "X",
-		"row": 0,
-		"col": 0
-	}`
-
-	req := httptest.NewRequest(http.MethodPost, "/games/move-id/move", bytes.NewBufferString(body))
+	req := httptest.NewRequest(http.MethodPost, "/games/move-id/move", bytes.NewBufferString(makeMoveBody))
 	req = mux.SetURLVars(req, map[string]string{
 		"id": "move-id",
 	})
@@ -311,13 +312,7 @@ func TestMakeMoveHandlerHumanVsBot(t *testing.T) {
 
 	_ = h.store.Create(g)
 
-	body := `{
-		"player": "X",
-		"row": 0,
-		"col": 0
-	}`
-
-	req := httptest.NewRequest(http.MethodPost, "/games/hvb-id/move", bytes.NewBufferString(body))
+	req := httptest.NewRequest(http.MethodPost, "/games/hvb-id/move", bytes.NewBufferString(makeMoveBody))
 	req = mux.SetURLVars(req, map[string]string{
 		"id": "hvb-id",
 	})
@@ -473,7 +468,7 @@ func (m *mockFailingStore) Create(_ *game.Game) error {
 	return fmt.Errorf("store unavailable")
 }
 
-func (m *mockFailingStore) Get(id string) (*game.Game, bool) { return nil, false }
+func (m *mockFailingStore) Get(_ string) (*game.Game, bool) { return nil, false }
 func (m *mockFailingStore) Delete(_ string) error            { return nil }
 
 // mockFailingDeleteStore is a GameStore whose Delete always returns an error.
@@ -519,14 +514,7 @@ func (m *mockFailingMover) Move(_ game.Board, _ string) (game.Position, error) {
 func TestCreateGameHandlerStoreCreateError(t *testing.T) {
 	h := NewHandler(&mockFailingStore{})
 
-	body := `{
-		"mode": 1,
-		"difficultyX": 1,
-		"difficultyO": 1,
-		"boardSize": 3
-	}`
-
-	req := httptest.NewRequest(http.MethodPost, "/games", bytes.NewBufferString(body))
+	req := httptest.NewRequest(http.MethodPost, "/games", bytes.NewBufferString(createGameBody))
 	rec := httptest.NewRecorder()
 
 	h.CreateGameHandler(rec, req)
@@ -578,11 +566,7 @@ func TestMakeMoveHandlerBotVsBotRejected(t *testing.T) {
 	assert.NoError(t, err)
 	gameID := created["id"].(string)
 
-	moveBody := `{
-		"player": "X",
-		"row": 0,
-		"col": 0
-	}`
+	moveBody := makeMoveBody
 	req := httptest.NewRequest(http.MethodPost, "/games/"+gameID+"/move", bytes.NewBufferString(moveBody))
 	req = mux.SetURLVars(req, map[string]string{
 		"id": gameID,
