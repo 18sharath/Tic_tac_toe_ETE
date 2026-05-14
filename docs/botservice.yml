@@ -1,0 +1,113 @@
+openapi: 3.1.0
+
+info:
+  title: Tic Tac Toe bot Service API 
+  version: 1.0.0
+  description:
+    External bot service that calculates the best move
+    for a Tic Tac Toe board using Minimax algorithm.
+
+servers:
+  - url: http://localhost:{port}
+    variables:
+      port:
+        default: '9090'
+        description: Botservice port
+
+tags:
+  - name: Bot service
+    description: Bot move generation API
+
+paths:
+
+  /move:
+    post:
+      tags:
+        - Bot service
+      
+      summary: Generate the best move
+      operationId: generateMove
+
+      requestBody:
+        required: true
+
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MoveRequest'
+
+      responses:
+        '200':
+          description: Best move generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MoveResponse'
+
+        '400':
+          description: Invalid request body or invalid board
+
+        '405':
+          description: Method not allowed
+
+        '422':
+           description: No moves available
+
+        '500':
+          description:  Failed to encode response
+
+
+components:
+  schemas:
+
+    MoveRequest:
+      type: object
+
+      properties:
+        board:
+          type: array
+
+          items:
+            type: array
+
+            items:
+              type: string
+
+          examples:
+            - [
+                ["X","","X"],
+                ["","O",""],
+                ["","",""]
+              ]
+
+        player:
+          type: string
+
+          enum:
+            - X
+            - O 
+
+          examples:
+            - O 
+          
+      required: 
+        - board
+
+    MoveResponse:
+      type: object
+
+      properties:
+        row:
+          type: integer
+          examples:
+            - 0
+
+        col:
+          type: integer
+          examples:
+            - 1
+
+
+
+
+

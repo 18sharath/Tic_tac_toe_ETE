@@ -1,0 +1,217 @@
+openapi: 3.1.0
+
+info:
+  title: Tic Tac Toe API
+  version: 1.0.0
+  description: |
+    REST API for Tic Tac Toe game server supporting:
+      - Human vs Human
+      - Human vs Bot
+      - Bot vs Bot
+
+servers:
+  - url: http://localhost:{port}
+    variables:
+      port:
+        default: '8080'
+        description: Server port
+
+tags:
+  - name: Games
+    description: Tic Tac Toe Game Operations
+
+paths:
+  /games:
+    post:
+      tags:
+        - Games
+
+      summary: Create a new Game
+      operationId: postGame
+
+      requestBody:
+        required: true
+
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGameRequest'
+
+      responses:
+        '201':
+          description: Game created successfully
+
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Game'
+
+        '400':
+          description: Bad request
+
+
+  /games/{id}:
+    get:
+      summary: Get game by ID
+      operationId: getGame
+
+      parameters:
+        - name: id 
+          in: path
+          required: true
+
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: Game fetched successfully
+
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Game'
+
+        '404':
+          description: Game not found
+
+    delete:
+      summary: Delete a game
+      operationId: deleteGame
+
+      parameters: 
+        - name: id
+          in: path
+          required: true
+
+          schema:
+            type: string
+
+      responses:
+        '204':
+          description: Game deleted successfully
+
+        '404':
+          description: Game not found
+
+  /games/{id}/move:
+    put:
+      summary: Make a move
+      operationId: makeMove
+
+      parameters:
+        - name: id
+          in: path
+          required: true
+
+          schema:
+            type: string
+
+      requestBody:
+        required: true
+
+        content: 
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MoveRequest'
+          
+      responses:
+        '200':
+          description: Move applied successfully
+
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Game'
+
+        '400':
+          description: Invalid move
+
+        '404':
+          description: Game not found
+
+components:
+
+  schemas:
+
+    CreateGameRequest:
+      type: object
+
+      properties:
+        mode:
+          type: integer
+          example: 1
+
+        difficultyX:
+          type: integer
+          example: 1
+
+        difficultyO:
+          type: integer
+          example: 2
+
+        boardSize:
+          type: integer
+          minimum: 3
+          example: 3
+
+      required:
+        - mode
+        - boardSize
+
+    MoveRequest:
+      type: object
+
+      properties:
+        player: 
+          type: string
+          enum:
+            - X
+            - O
+
+        row:
+          type: integer
+
+        col:
+          type: integer
+
+      required:
+        - player
+        - row
+        - col
+
+    Game:
+      type: object
+
+      properties:
+        id:
+          type: string
+
+        board:
+          type: array
+
+          items:
+            type: array
+
+            items: 
+              type: string
+
+        turn:
+          type: string
+        
+        winner:
+          type: string
+        
+        draw:
+          type: boolean
+
+        mode:
+          type: integer
+
+        boardSize:
+          type: integer
+
+
+
+            
+
