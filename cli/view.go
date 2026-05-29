@@ -2,8 +2,6 @@ package main
 
 import "github.com/charmbracelet/lipgloss"
 
-
-
 func (m model) View() string {
 	switch m.screen {
 	case nameScreen:
@@ -19,7 +17,6 @@ func (m model) View() string {
 	}
 	return ""
 }
-
 
 // renderTurn shows the current player's turn.
 func (m model) renderTurn() string {
@@ -108,7 +105,6 @@ func (m model) viewDifficultyScreen() string {
 	return lipgloss.Place(60, 20, lipgloss.Center, lipgloss.Center, s)
 }
 
-
 // viewMenuScreen renders the main menu with selectable options.
 func (m model) viewMenuScreen() string {
 	s := "\n"
@@ -148,4 +144,3 @@ func (m model) viewNameScreen() string {
 		titleStyle.Render(label+m.input),
 	)
 }
-

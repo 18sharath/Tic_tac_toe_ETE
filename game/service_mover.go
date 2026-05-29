@@ -10,15 +10,15 @@ var botserviceURL string
 
 // SetBotServiceURL configures the external bot service endpoint.
 func SetBotServiceURL(url string) {
-	botserviceURL=url
+	botserviceURL = url
 }
 
-type moveRequest struct{
-	Board Board `json:"board"`
+type moveRequest struct {
+	Board  Board  `json:"board"`
 	Player string `json:"player"`
 }
 
-type moveResponse struct{
+type moveResponse struct {
 	Row int `json:"row"`
 	Col int `json:"col"`
 }
@@ -27,15 +27,15 @@ type moveResponse struct{
 type ServiceMover struct{}
 
 // Move calls external bot moves and returns next move.
-func (s *ServiceMover) Move(board Board,  player string) (Position,error) {
+func (s *ServiceMover) Move(board Board, player string) (Position, error) {
 	reqBody := moveRequest{
-		Board: board,
+		Board:  board,
 		Player: player,
 	}
 
 	jsonData, err := json.Marshal(reqBody)
 
-	if err!=nil{
+	if err != nil {
 		return Position{}, err
 	}
 
@@ -44,21 +44,21 @@ func (s *ServiceMover) Move(board Board,  player string) (Position,error) {
 		"application/json",
 		bytes.NewBuffer(jsonData),
 	)
-	if err!=nil{
+	if err != nil {
 		return Position{}, err
 	}
 
 	defer func() {
-			if cerr := resp.Body.Close(); cerr != nil && err != nil {
-				err = cerr
-			}
-		}()
+		if cerr := resp.Body.Close(); cerr != nil && err != nil {
+			err = cerr
+		}
+	}()
 
 	var result moveResponse
 
-	if err := json.NewDecoder(resp.Body).Decode(&result); err!=nil{
-		return  Position{}, err
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return Position{}, err
 	}
 
-	return Position(result),nil
+	return Position(result), nil
 }

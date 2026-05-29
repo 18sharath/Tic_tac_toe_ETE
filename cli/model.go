@@ -21,9 +21,9 @@ const (
 type mode int
 
 const (
-	ModeHumanVsHuman mode = iota+1
-	ModeHumanVsBot  
-	ModeBotVsBot     
+	ModeHumanVsHuman mode = iota + 1
+	ModeHumanVsBot
+	ModeBotVsBot
 )
 
 type model struct {

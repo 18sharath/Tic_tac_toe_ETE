@@ -18,7 +18,7 @@ func drawBoard(board [][]string, row, col int) string {
 			s += makeSeparator(size, cellWidth)
 		}
 	}
-	
+
 	return s
 }
 

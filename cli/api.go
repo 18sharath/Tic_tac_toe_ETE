@@ -38,7 +38,6 @@ func CreateGame(mode int, diffX, diffO, size int) (g *Game, err error) {
 		BoardSize:   size,
 	}
 
-
 	jsonData, err := json.Marshal(reqBody)
 	if err != nil {
 		return nil, err

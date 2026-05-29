@@ -17,7 +17,7 @@ import (
 func main() {
 	storeType := flag.String("store", "memory", "memory or file")
 	port := flag.String("port", "8080", "server port")
-	botserviceURL:= flag.String("bot-service-url","http://localhost:9090/move","bot service endpoint")
+	botserviceURL := flag.String("bot-service-url", "http://localhost:9090/move", "bot service endpoint")
 
 	flag.Parse()
 
@@ -43,12 +43,12 @@ func main() {
 
 	log.Printf("Server running on %v", addr)
 
-	srv:= &http.Server{
-		Addr: addr,
-		Handler: r,
-		ReadTimeout: 5*time.Second,
-		WriteTimeout: 10*time.Second,
-		IdleTimeout: 120*time.Second,
+	srv := &http.Server{
+		Addr:         addr,
+		Handler:      r,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		IdleTimeout:  120 * time.Second,
 	}
 	err := srv.ListenAndServe()
 	if err != nil {
