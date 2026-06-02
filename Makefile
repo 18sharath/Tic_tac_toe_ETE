@@ -14,6 +14,7 @@ BIN_DIR=bin
 SERVER_BINARY=$(BIN_DIR)/server
 BOTSERVICE_BINARY=$(BIN_DIR)/botservice
 CLI_BINARY=$(BIN_DIR)/cli
+FRONTEND_BINARY=$(BIN_DIR)/frontend
 
 
 # Default target
@@ -22,7 +23,7 @@ all: fmt lint test build
 
 # Build all binaries
 .PHONY: build
-build: build-server build-botservice build-cli
+build: build-server build-botservice build-cli build-frontend
 
 # Build server
 .PHONY: build-server
@@ -45,11 +46,23 @@ build-cli:
 	@mkdir -p $(BIN_DIR)
 	$(GOBUILD)  -o $(CLI_BINARY) ./cli
 
+# Build frontend server
+.PHONY: build-frontend
+build-frontend:
+	@echo "Building frontend server..."
+	@mkdir -p $(BIN_DIR)
+	$(GOBUILD) -o $(FRONTEND_BINARY) ./web
+
 # Run targets for development
 .PHONY: run-server
 run-server: build-server
 	@echo "Starting server on :8080..."
 	$(SERVER_BINARY) -port 8080 -store memory
+
+.PHONY: run-server-web
+run-server-web: build-frontend
+	@echo "Starting server with web client on http://localhost:3000..."
+	$(SERVER_BINARY) -port 3000
 
 .PHONY: run-botservice
 run-botservice: build-botservice
@@ -60,6 +73,12 @@ run-botservice: build-botservice
 run-cli: build-cli
 	@echo "Starting CLI..."
 	$(CLI_BINARY) -base-url http://localhost:8080 
+
+.PHONY: run-frontend
+run-frontend: build-frontend
+	@echo "Starting frontend on http://localhost:3000..."
+	@echo "Make sure backend is running on http://localhost:8080"
+	cd web && ../$(FRONTEND_BINARY) -port 3000
 
 # Test targets
 .PHONY: test
