@@ -11,7 +11,8 @@ func TestScreenConstants(t *testing.T) {
 	assert.Equal(t, 1, int(nameScreen))
 	assert.Equal(t, 2, int(sizeScreen))
 	assert.Equal(t, 3, int(difficultyScreen))
-	assert.Equal(t, 4, int(gameScreen))
+	assert.Equal(t, 4, int(botURLScreen))
+	assert.Equal(t, 5, int(gameScreen))
 }
 
 func TestInputModeConstants(t *testing.T) {
@@ -20,6 +21,8 @@ func TestInputModeConstants(t *testing.T) {
 	assert.Equal(t, "size", inputSize)
 	assert.Equal(t, "diffX", inputDiffX)
 	assert.Equal(t, "diffO", inputDiffO)
+	assert.Equal(t, "botURLX", inputBotURLX)
+	assert.Equal(t, "botURLO", inputBotURLO)
 }
 
 func TestModeConstants(t *testing.T) {

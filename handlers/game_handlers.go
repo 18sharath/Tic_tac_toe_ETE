@@ -15,10 +15,12 @@ import (
 
 // CreateGameRequest represents the payload required to create a new game.
 type CreateGameRequest struct {
-	Mode        game.Mode       `json:"mode"`
-	DifficultyX game.Difficulty `json:"difficultyX"`
-	DifficultyO game.Difficulty `json:"difficultyO"`
-	BoardSize   int             `json:"boardSize"`
+	Mode           game.Mode       `json:"mode"`
+	DifficultyX    game.Difficulty `json:"difficultyX"`
+	DifficultyO    game.Difficulty `json:"difficultyO"`
+	BoardSize      int             `json:"boardSize"`
+	BotServiceURLX string          `json:"botServiceUrlX,omitempty"`
+	BotServiceURLO string          `json:"botServiceUrlO,omitempty"`
 }
 
 // MoveRequest represents the payload required to make a move in a game.
@@ -67,6 +69,7 @@ func (h *Handler) CreateGameHandler(w http.ResponseWriter, r *http.Request) {
 
 	case game.ModeHumanVsBot:
 		xMover = nil
+
 		oMover = game.NewBotMover(req.DifficultyO)
 
 	case game.ModeBotVsBot:

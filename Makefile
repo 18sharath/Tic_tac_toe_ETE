@@ -61,8 +61,9 @@ run-server: build-server
 
 .PHONY: run-server-web
 run-server-web: build-frontend
-	@echo "Starting server with web client on http://localhost:3000..."
-	$(SERVER_BINARY) -port 3000
+	@echo "Starting frontend server on http://localhost:3000..."
+	@echo "Make sure backend is running on http://localhost:8080"
+	cd web && ../$(FRONTEND_BINARY) -port 3000
 
 .PHONY: run-botservice
 run-botservice: build-botservice

@@ -7,6 +7,7 @@ const (
 	nameScreen
 	sizeScreen
 	difficultyScreen
+	botURLScreen
 	gameScreen
 )
 
@@ -16,6 +17,8 @@ const (
 	inputSize  = "size"
 	inputDiffX = "diffX"
 	inputDiffO = "diffO"
+	inputBotURLX = "botURLX"
+	inputBotURLO = "botURLO"
 )
 
 type mode int
@@ -25,6 +28,12 @@ const (
 	ModeHumanVsBot
 	ModeBotVsBot
 )
+
+type BotService struct{
+	Name string `json:"name"`
+	URL string 	`json:"url"`
+	Description string `json:"description"`
+}
 
 type model struct {
 	cursor      int
@@ -40,4 +49,7 @@ type model struct {
 	game        *Game
 	row         int
 	col         int
+	botServiceX string
+	botServiceO string
+	botServices []BotService
 }

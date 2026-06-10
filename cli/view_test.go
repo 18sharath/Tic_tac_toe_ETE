@@ -194,3 +194,58 @@ func TestViewDifficultyScreenBotVsBotDiffO(t *testing.T) {
 
 	assert.Contains(t, result, "Bot O")
 }
+
+func TestViewBotURLScreen(t *testing.T) {
+    m := model{
+        screen:      botURLScreen,
+        inputMode:   inputBotURLX,
+        cursor:      0,
+        botServices: []BotService{{Name: "Test Bot", URL: "http://test"}},
+    }
+
+    result := m.viewBotURLScreen()
+
+    assert.Contains(t, result, "Bot Service for X")
+    assert.Contains(t, result, "Test Bot")
+    assert.Contains(t, result, "Custom URL")
+}
+
+func TestViewBotURLScreenForO(t *testing.T) {
+    m := model{
+        screen:      botURLScreen,
+        inputMode:   inputBotURLO,
+        cursor:      0,
+        botServices: []BotService{{Name: "Test Bot", URL: "http://test"}},
+    }
+
+    result := m.viewBotURLScreen()
+
+    assert.Contains(t, result, "Bot Service for O")
+}
+
+func TestViewBotURLScreenCustomSelected(t *testing.T) {
+    m := model{
+        screen:      botURLScreen,
+        inputMode:   inputBotURLX,
+        cursor:      1,
+        botServices: []BotService{{Name: "Test Bot", URL: "http://test"}},
+        input:       "http://custom",
+    }
+
+    result := m.viewBotURLScreen()
+
+    assert.Contains(t, result, "▶ Custom URL")
+    assert.Contains(t, result, "http://custom")
+}
+
+func TestViewRoutingBotURLScreen(t *testing.T) {
+    m := model{
+        screen:      botURLScreen,
+        inputMode:   inputBotURLX,
+        botServices: []BotService{{Name: "Bot1", URL: "http://bot1"}},
+    }
+
+    result := m.View()
+
+    assert.Contains(t, result, "Bot Service")
+}

@@ -28,14 +28,20 @@ async function apiRequest(endpoint, options = {}) {
     return response.json();
 }
 
-export async function createGame(mode, difficultyX, difficultyO, boardSize) {
+export async function getBotServices() {
+    return apiRequest('/bot-services');
+}
+
+export async function createGame(mode, difficultyX, difficultyO, boardSize, botServiceUrlX = '', botServiceUrlO = '') {
     return apiRequest('/games', {
         method: 'POST',
         body: JSON.stringify({
             mode: mode,
             difficultyX: difficultyX,
             difficultyO: difficultyO,
-            boardSize: boardSize
+            boardSize: boardSize,
+            botServiceUrlX: botServiceUrlX,
+            botServiceUrlO: botServiceUrlO
         })
     });
 }

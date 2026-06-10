@@ -90,3 +90,22 @@ func TestDrawBoardDynamicSize(t *testing.T) {
 	assert.Contains(t, result, "O")
 	assert.True(t, strings.Contains(result, "+"))
 }
+
+func TestCenterCellNarrow(t *testing.T) {
+    result := centerCell("X", 3)
+
+    assert.Equal(t, 3, len(result))
+    assert.Contains(t, result, "X")
+}
+
+func TestRenderCellWithO(t *testing.T) {
+    result := renderCell("O", 0, 0, 1, 1)
+
+    assert.Contains(t, result, "O")
+}
+
+func TestRenderCellEmptyWithCursor(t *testing.T) {
+    result := renderCell("", 0, 0, 0, 0)
+
+    assert.NotEqual(t, "", result)
+}

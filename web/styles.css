@@ -283,3 +283,31 @@ h2 {
     animation: spin 1s linear infinite;
     margin-left: 10px;
 }
+
+/* Bot Service Selection Styles */
+.custom-url-input {
+    width: 100%;
+    padding: 8px 12px;
+    margin-top: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.custom-url-input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.custom-url-input::placeholder {
+    color: #999;
+    font-style: italic;
+}
+
+#bot-service-x-group,
+#bot-service-o-group {
+    margin-left: 20px;
+    padding-left: 10px;
+    border-left: 3px solid #007bff;
+}

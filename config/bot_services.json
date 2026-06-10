@@ -1,0 +1,9 @@
+{
+    "services":[
+        {
+            "name": "Local Bot Service",
+            "url": "http://localhost:9090/move",
+            "description": "Local development bot"
+        }
+    ]
+}

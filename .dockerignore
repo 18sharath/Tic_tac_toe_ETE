@@ -1,0 +1,14 @@
+bin/
+*.exe
+*.exe~
+*.dll
+*.so 
+*.dylib
+*.test
+*.out
+.git
+.gitignore
+.DS_Store
+*.md
+!README.md
+coverage.html

@@ -12,6 +12,8 @@ func (m model) View() string {
 		return m.viewMenuScreen()
 	case difficultyScreen:
 		return m.viewDifficultyScreen()
+	case botURLScreen:
+		return m.viewBotURLScreen()
 	case gameScreen:
 		return m.viewGameScreen()
 	}
@@ -143,4 +145,41 @@ func (m model) viewNameScreen() string {
 	return lipgloss.Place(60, 20, lipgloss.Center, lipgloss.Center,
 		titleStyle.Render(label+m.input),
 	)
+}
+
+// viewBotURLScreen renders the bot service URL selection
+func (m model) viewBotURLScreen() string {
+    s := "\n"
+    
+    var title string
+    if m.inputMode == inputBotURLX {
+        title = "Select Bot Service for X"
+    } else {
+        title = "Select Bot Service for O"
+    }
+    
+    s += menuTitleStyle.Render(title) + "\n\n"
+    
+    for i, svc := range m.botServices {
+        item := menuItemStyle.Render(svc.Name)
+        if i == m.cursor {
+            item = selectedStyle.Render("▶ " + svc.Name)
+        }
+        s += item + "\n"
+    }
+    
+    customIdx := len(m.botServices)
+    customItem := menuItemStyle.Render("Custom URL...")
+    if m.cursor == customIdx {
+        customItem = selectedStyle.Render("▶ Custom URL...")
+    }
+    s += customItem + "\n\n"
+    
+    if m.cursor == customIdx {
+        s += "URL: " + m.input + "█\n"
+    }
+    
+    s += helpStyle.Render("↑/↓ to move • Enter to select • type URL if Custom • b to back")
+    
+    return lipgloss.Place(60, 20, lipgloss.Center, lipgloss.Center, s)
 }
