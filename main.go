@@ -33,7 +33,7 @@ var botServiceConfig BotServiceConfig
 func loadBotServiceConfig(path string) error {
 	data, err := os.ReadFile(path)
 	if err != nil {
-		botServiceConfig = BotServiceConfig{Services: []Botservice{}} // artha agilla
+		botServiceConfig = BotServiceConfig{Services: []Botservice{}}
 		return nil
 	}
 	return json.Unmarshal(data, &botServiceConfig)
