@@ -2,8 +2,6 @@ package main
 
 import "github.com/charmbracelet/lipgloss"
 
-
-
 func (m model) View() string {
 	switch m.screen {
 	case nameScreen:
@@ -14,12 +12,13 @@ func (m model) View() string {
 		return m.viewMenuScreen()
 	case difficultyScreen:
 		return m.viewDifficultyScreen()
+	case botURLScreen:
+		return m.viewBotURLScreen()
 	case gameScreen:
 		return m.viewGameScreen()
 	}
 	return ""
 }
-
 
 // renderTurn shows the current player's turn.
 func (m model) renderTurn() string {
@@ -108,7 +107,6 @@ func (m model) viewDifficultyScreen() string {
 	return lipgloss.Place(60, 20, lipgloss.Center, lipgloss.Center, s)
 }
 
-
 // viewMenuScreen renders the main menu with selectable options.
 func (m model) viewMenuScreen() string {
 	s := "\n"
@@ -149,3 +147,39 @@ func (m model) viewNameScreen() string {
 	)
 }
 
+// viewBotURLScreen renders the bot service URL selection
+func (m model) viewBotURLScreen() string {
+    s := "\n"
+    
+    var title string
+    if m.inputMode == inputBotURLX {
+        title = "Select Bot Service for X"
+    } else {
+        title = "Select Bot Service for O"
+    }
+    
+    s += menuTitleStyle.Render(title) + "\n\n"
+    
+    for i, svc := range m.botServices {
+        item := menuItemStyle.Render(svc.Name)
+        if i == m.cursor {
+            item = selectedStyle.Render("▶ " + svc.Name)
+        }
+        s += item + "\n"
+    }
+    
+    customIdx := len(m.botServices)
+    customItem := menuItemStyle.Render("Custom URL...")
+    if m.cursor == customIdx {
+        customItem = selectedStyle.Render("▶ Custom URL...")
+    }
+    s += customItem + "\n\n"
+    
+    if m.cursor == customIdx {
+        s += "URL: " + m.input + "█\n"
+    }
+    
+    s += helpStyle.Render("↑/↓ to move • Enter to select • type URL if Custom • b to back")
+    
+    return lipgloss.Place(60, 20, lipgloss.Center, lipgloss.Center, s)
+}

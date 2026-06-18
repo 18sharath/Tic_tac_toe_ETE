@@ -1,0 +1,313 @@
+/* Base Styles */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.container {
+    max-width: 500px;
+    width: 100%;
+}
+
+h1 {
+    text-align: center;
+    color: #fff;
+    margin-bottom: 30px;
+    font-size: 2.5rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+h2 {
+    color: #e94560;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+}
+
+/* Panel Styles */
+.panel {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+/* Form Styles */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #333;
+    font-weight: 600;
+}
+
+.form-group select {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 16px;
+    background: #fff;
+    color: #333;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+}
+
+.form-group select:hover {
+    border-color: #e94560;
+}
+
+.form-group select:focus {
+    outline: none;
+    border-color: #e94560;
+}
+
+/* Button Styles */
+.btn {
+    padding: 14px 28px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #e94560 0%, #0f3460 100%);
+    color: #fff;
+    width: 100%;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(233, 69, 96, 0.4);
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: #fff;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+}
+
+.btn-danger {
+    background: #dc3545;
+    color: #fff;
+}
+
+.btn-danger:hover {
+    background: #c82333;
+}
+
+/* Game Info Styles */
+.game-info {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.status {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.status.winner-x {
+    color: #e94560;
+}
+
+.status.winner-o {
+    color: #27ae60;
+}
+
+.status.draw {
+    color: #6c757d;
+}
+
+.game-id {
+    font-size: 0.85rem;
+    color: #888;
+    font-family: monospace;
+}
+
+/* Board Styles */
+.board-container {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.board {
+    display: grid;
+    gap: 8px;
+    background: #333;
+    padding: 8px;
+    border-radius: 12px;
+}
+
+.cell {
+    width: 80px;
+    height: 80px;
+    background: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 2.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cell:hover:not(.occupied):not(.disabled) {
+    background: #f0f0f0;
+    transform: scale(1.05);
+}
+
+.cell.occupied {
+    cursor: not-allowed;
+}
+
+.cell.disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.cell.x {
+    color: #e94560;
+}
+
+.cell.o {
+    color: #27ae60;
+}
+
+/* Responsive board sizing */
+.board.size-4 .cell {
+    width: 70px;
+    height: 70px;
+    font-size: 2rem;
+}
+
+.board.size-5 .cell {
+    width: 60px;
+    height: 60px;
+    font-size: 1.8rem;
+}
+
+/* Game Actions */
+.game-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.game-actions .btn {
+    flex: 1;
+}
+
+/* Message Styles */
+.message {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 500;
+}
+
+.message.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.message.success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.message.info {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+/* Animation for winning */
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.cell.winning {
+    animation: pulse 0.5s ease-in-out infinite;
+}
+
+/* Loading State */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Spin animation for loading */
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #e94560;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-left: 10px;
+}
+
+/* Bot Service Selection Styles */
+.custom-url-input {
+    width: 100%;
+    padding: 8px 12px;
+    margin-top: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.custom-url-input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.custom-url-input::placeholder {
+    color: #999;
+    font-style: italic;
+}
+
+#bot-service-x-group,
+#bot-service-o-group {
+    margin-left: 20px;
+    padding-left: 10px;
+    border-left: 3px solid #007bff;
+}

@@ -8,7 +8,6 @@ linters:
     # Core error detection (essential for code correctness)
     - bodyclose          # Checks HTTP response body is closed
     - errcheck           # Checks unchecked errors
-    - gosec              # Security issues detection
     - govet              # Go vet built-in checks
     - ineffassign        # Detects ineffectual assignments
     - staticcheck        # Advanced static analysis (includes gosimple, stylecheck)

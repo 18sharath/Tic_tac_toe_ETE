@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Tic Tac Toe</h1>
+        
+        <!-- Game Setup Panel -->
+        <div id="setup-panel" class="panel">
+            <h2>New Game</h2>
+            
+            <div class="form-group">
+                <label for="game-mode">Game Mode:</label>
+                <select id="game-mode">
+                    <option value="1">Human vs Human</option>
+                    <option value="2" selected>Human vs Bot</option>
+                    <option value="3">Bot vs Bot</option>
+                </select>
+            </div>
+            
+            <div class="form-group" id="difficulty-x-group" style="display: none;">
+                <label for="difficulty-x">Player X (Bot) Difficulty:</label>
+                <select id="difficulty-x">
+                    <option value="1">Easy</option>
+                    <option value="2">Medium</option>
+                    <option value="3" selected>Hard</option>
+                    <option value="4">Service Bot</option>
+                </select>
+            </div>
+            
+            <div class="form-group" id="bot-service-x-group" style="display: none;">
+                <label for="bot-service-x">Select Bot Service for X:</label>
+                <select id="bot-service-x">
+                    <!-- Populated dynamically -->
+                </select>
+                <input type="text" id="custom-bot-url-x" placeholder="Or enter custom URL..." class="custom-url-input">
+            </div>
+            
+            <div class="form-group" id="difficulty-o-group">
+                <label for="difficulty-o">Player O (Bot) Difficulty:</label>
+                <select id="difficulty-o">
+                    <option value="1">Easy</option>
+                    <option value="2">Medium</option>
+                    <option value="3" selected>Hard</option>
+                    <option value="4">Service Bot</option>
+                </select>
+            </div>
+            
+            <div class="form-group" id="bot-service-o-group" style="display: none;">
+                <label for="bot-service-o">Select Bot Service for O:</label>
+                <select id="bot-service-o">
+                    <!-- Populated dynamically -->
+                </select>
+                <input type="text" id="custom-bot-url-o" placeholder="Or enter custom URL..." class="custom-url-input">
+            </div>
+            
+            <div class="form-group">
+                <label for="board-size">Board Size:</label>
+                <select id="board-size">
+                    <option value="3" selected>3x3</option>
+                    <option value="4">4x4</option>
+                    <option value="5">5x5</option>
+                    <option value="6">6x6</option>
+                </select>
+            </div>
+            
+            <button id="start-game" class="btn btn-primary">Start Game</button>
+        </div>
+        
+        <!-- Game Panel -->
+        <div id="game-panel" class="panel" style="display: none;">
+            <div class="game-info">
+                <div id="game-status" class="status">Loading...</div>
+                <div id="game-id" class="game-id"></div>
+            </div>
+            
+            <div id="board-container" class="board-container">
+                <!-- Board will be rendered here -->
+            </div>
+            
+            <div class="game-actions">
+                <button id="new-game" class="btn btn-secondary">New Game</button>
+                <button id="delete-game" class="btn btn-danger">Delete Game</button>
+            </div>
+        </div>
+        
+        <!-- Error/Message Display -->
+        <div id="message" class="message" style="display: none;"></div>
+    </div>
+    
+    <script type="module" src="app.js"></script>
+</body>
+</html>

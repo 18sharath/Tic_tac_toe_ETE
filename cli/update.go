@@ -7,6 +7,13 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+const (
+	keyUp    = "up"
+	keyDown  = "down"
+	keyLeft  = "left"
+	keyRight = "right"
+)
+
 type botMsg struct {
 	game *Game
 }
@@ -53,6 +60,10 @@ func (m model) handleKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return m.handleInputScreen(msg)
 	}
 
+	if m.screen == botURLScreen {
+		return m.handleBotURLScreen(msg)
+	}
+
 	switch msg.String() {
 	case "r":
 		return m.handleRestart()
@@ -60,7 +71,7 @@ func (m model) handleKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return m.handleBack()
 	case "q":
 		return m, tea.Quit
-	case "up", "down", "left", "right":
+	case keyUp, keyDown, keyLeft, keyRight:
 		return m.handleMovement(msg.String())
 	case "enter":
 		return m.handleEnter()
@@ -147,7 +158,7 @@ func (m model) startGameAfterSize() (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
-	g, err := CreateGame(m.mode, m.difficultyX, m.difficultyO, m.BoardSize)
+	g, err := CreateGame(m.mode, m.difficultyX, m.difficultyO, m.BoardSize, "", "")
 	if err != nil {
 		return m, nil
 	}
@@ -196,7 +207,7 @@ func (m model) handleMovement(key string) (tea.Model, tea.Cmd) {
 
 func (m model) handleRestart() (tea.Model, tea.Cmd) {
 	if m.screen == gameScreen {
-		g, err := CreateGame(m.mode, m.difficultyX, m.difficultyO, m.BoardSize)
+		g, err := CreateGame(m.mode, m.difficultyX, m.difficultyO, m.BoardSize, m.botServiceX, m.botServiceO)
 		if err == nil {
 			m.game = g
 			m.row, m.col = 0, 0
@@ -221,6 +232,9 @@ func (m model) handleEnter() (tea.Model, tea.Cmd) {
 
 	case difficultyScreen:
 		return m.handleDifficultySelection()
+
+	case botURLScreen:
+		return m.handleBotURLSelection()
 
 	case gameScreen:
 		g, err := MakeMove(m.game.ID, m.game.Turn, m.row, m.col)
@@ -256,45 +270,141 @@ func (m model) handleMenuSelection() (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
+func (m model) setupBotURLScreen(inputMode string) model {
+	m.screen = botURLScreen
+	m.inputMode = inputMode
+	m.cursor = 0
+	m.input = ""
+	if len(m.botServices) == 0 {
+		if services, err := GetBotServices(); err == nil {
+			m.botServices = services
+		}
+	}
+	return m
+}
+
+func (m model) setupGameScreen(g *Game) model {
+	m.game = g
+	m.screen = gameScreen
+	m.row, m.col = 0, 0
+	return m
+}
+
 func (m model) handleDifficultySelection() (tea.Model, tea.Cmd) {
 	diff := m.cursor + 1
+	const DifficultyService = 4
 
 	if m.mode == int(ModeHumanVsBot) {
 		m.difficultyO = diff
-
-		g, err := CreateGame(m.mode, 0, m.difficultyO, m.BoardSize)
+		if diff == DifficultyService {
+			return m.setupBotURLScreen(inputBotURLO), nil
+		}
+		g, err := CreateGame(m.mode, 0, m.difficultyO, m.BoardSize, "", "")
 		if err != nil {
 			return m, nil
 		}
-
-		m.game = g
-		m.screen = gameScreen
-		m.row, m.col = 0, 0
-
-		return m, nil
+		return m.setupGameScreen(g), nil
 	}
 
 	if m.mode == int(ModeBotVsBot) {
 		if m.inputMode == inputDiffX {
 			m.difficultyX = diff
+			if diff == DifficultyService {
+				return m.setupBotURLScreen(inputBotURLX), nil
+			}
 			m.inputMode = inputDiffO
 			return m, nil
 		}
 
 		if m.inputMode == inputDiffO {
 			m.difficultyO = diff
-
-			g, err := CreateGame(m.mode, m.difficultyX, m.difficultyO, m.BoardSize)
+			if diff == DifficultyService {
+				return m.setupBotURLScreen(inputBotURLO), nil
+			}
+			g, err := CreateGame(m.mode, m.difficultyX, m.difficultyO, m.BoardSize, "", "")
 			if err != nil {
 				return m, nil
 			}
-
-			m.game = g
-			m.screen = gameScreen
-			m.row, m.col = 0, 0
-
+			m = m.setupGameScreen(g)
 			return m, botPlayCmd(m.game.ID)
 		}
+	}
+
+	return m, nil
+}
+
+func (m model) handleBotURLSelection() (tea.Model, tea.Cmd) {
+	var selectedURL string
+
+	if m.cursor < len(m.botServices) {
+		selectedURL = m.botServices[m.cursor].URL
+	} else {
+		selectedURL = m.input
+	}
+
+	if selectedURL == "" {
+		return m, nil
+	}
+
+	if m.inputMode == inputBotURLX {
+		m.botServiceX = selectedURL
+		m.screen = difficultyScreen
+		m.inputMode = inputDiffO
+		m.cursor = 0
+		m.input = ""
+		return m, nil
+	}
+
+	if m.inputMode == inputBotURLO {
+		m.botServiceO = selectedURL
+
+		g, err := CreateGame(m.mode, m.difficultyX, m.difficultyO, m.BoardSize, m.botServiceX, m.botServiceO)
+		if err != nil {
+			return m, nil
+		}
+		m.game = g
+		m.screen = gameScreen
+		m.row, m.col = 0, 0
+
+		if m.mode == int(ModeBotVsBot) {
+			return m, botPlayCmd(m.game.ID)
+		}
+		return m, nil
+	}
+	return m, nil
+}
+
+func (m model) handleBotURLScreen(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	customIdx := len(m.botServices)
+
+	switch msg.Type {
+	case tea.KeyRunes:
+		if m.cursor == customIdx {
+			m.input += string(msg.Runes)
+		}
+		return m, nil
+
+	case tea.KeyBackspace:
+		if m.cursor == customIdx && len(m.input) > 0 {
+			m.input = m.input[:len(m.input)-1]
+		}
+		return m, nil
+
+	case tea.KeyEnter:
+		return m.handleBotURLSelection()
+	}
+
+	switch msg.String() {
+	case keyUp:
+		if m.cursor > 0 {
+			m.cursor--
+		}
+	case keyDown:
+		if m.cursor < customIdx {
+			m.cursor++
+		}
+	case "b":
+		return m, tea.Quit
 	}
 
 	return m, nil

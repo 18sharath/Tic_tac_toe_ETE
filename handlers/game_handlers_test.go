@@ -469,16 +469,16 @@ func (m *mockFailingStore) Create(_ *game.Game) error {
 }
 
 func (m *mockFailingStore) Get(_ string) (*game.Game, bool) { return nil, false }
-func (m *mockFailingStore) Delete(_ string) error            { return nil }
+func (m *mockFailingStore) Delete(_ string) error           { return nil }
 
 // mockFailingDeleteStore is a GameStore whose Delete always returns an error.
 type mockFailingDeleteStore struct {
 	store.GameStore
 }
 
-func (m *mockFailingDeleteStore) Create(_ *game.Game) error        { return nil }
-func (m *mockFailingDeleteStore) Get(_ string) (*game.Game, bool)  { return nil, false }
-func (m *mockFailingDeleteStore) Delete(_ string) error            { return fmt.Errorf("delete failed") }
+func (m *mockFailingDeleteStore) Create(_ *game.Game) error       { return nil }
+func (m *mockFailingDeleteStore) Get(_ string) (*game.Game, bool) { return nil, false }
+func (m *mockFailingDeleteStore) Delete(_ string) error           { return fmt.Errorf("delete failed") }
 
 // mockGetAndFailStore returns a stored game on Get but always errors on Create.
 type mockGetAndFailStore struct {
@@ -708,7 +708,7 @@ func TestDeleteGameHandlerStoreError(t *testing.T) {
 }
 
 func TestRunBotGameMoverError(t *testing.T) {
-		g := game.NewGame(
+	g := game.NewGame(
 		"bot-err-id",
 		3,
 		game.ModeBotVsBot,
@@ -728,8 +728,8 @@ func TestMakeMoveHandlerSaveError(t *testing.T) {
 	h := NewHandler(s)
 
 	g := game.NewGame("save-move-id", 3, game.ModeHumanVsHuman, game.DifficultyEasy, nil, nil)
-	_ = s.Create(g) 
-	
+	_ = s.Create(g)
+
 	body := `{"player":"X","row":0,"col":0}`
 	req := httptest.NewRequest(http.MethodPost, "/games/save-move-id/move", bytes.NewBufferString(body))
 	req = mux.SetURLVars(req, map[string]string{"id": "save-move-id"})

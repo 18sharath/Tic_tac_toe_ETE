@@ -66,8 +66,8 @@ func TestServiceMoverMoveHTTPError(t *testing.T) {
 func TestServiceMoverMoveInvalidJSON(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		_, err:=w.Write([]byte(`{invalid json`))
-		require.Nil(t,err)
+		_, err := w.Write([]byte(`{invalid json`))
+		require.Nil(t, err)
 	}))
 	defer server.Close()
 
@@ -90,7 +90,7 @@ func TestServiceMoverMoveEmptyBoard(t *testing.T) {
 		resp := moveResponse{Row: 1, Col: 1}
 		w.Header().Set("Content-Type", "application/json")
 		jsonError := json.NewEncoder(w).Encode(resp)
-		require.Nil(t,jsonError)
+		require.Nil(t, jsonError)
 	}))
 	defer server.Close()
 
@@ -114,13 +114,13 @@ func TestServiceMoverMoveAsO(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var req moveRequest
 		jsonError := json.NewDecoder(r.Body).Decode(&req)
-		require.Nil(t,jsonError)
+		require.Nil(t, jsonError)
 		assert.Equal(t, "O", req.Player)
 
 		resp := moveResponse{Row: 2, Col: 2}
 		w.Header().Set("Content-Type", "application/json")
 		jsonError = json.NewEncoder(w).Encode(resp)
-		require.Nil(t,jsonError)
+		require.Nil(t, jsonError)
 	}))
 	defer server.Close()
 
@@ -146,7 +146,7 @@ func TestServiceMoverMoveBoardSent(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var req moveRequest
 		jsonError := json.NewDecoder(r.Body).Decode(&req)
-		require.Nil(t,jsonError)
+		require.Nil(t, jsonError)
 		receivedBoard = req.Board
 
 		resp := moveResponse{Row: 0, Col: 0}
@@ -174,8 +174,8 @@ func TestServiceMoverMoveBoardSent(t *testing.T) {
 func TestServiceMoverMoveServerError(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
-		_,err := w.Write([]byte(`{"error": "server error"}`))
-		require.Nil(t,err)
+		_, err := w.Write([]byte(`{"error": "server error"}`))
+		require.Nil(t, err)
 	}))
 	defer server.Close()
 

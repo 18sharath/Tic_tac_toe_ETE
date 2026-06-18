@@ -1,0 +1,46 @@
+services:
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - BOTSERVICE_URL=http://botservice:9090/move
+    volumes:
+      - ./data:/app/data
+      - ./config:/app/config:ro
+    depends_on:
+      - botservice
+    restart: unless-stopped
+    networks:
+      - tictactoe-net
+
+  botservice:
+    build:
+      context: .
+      dockerfile: botservice/Dockerfile
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+    networks:
+      - tictactoe-net
+
+  frontend:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - server
+    restart: unless-stopped
+    networks:
+      - tictactoe-net
+
+networks:
+  tictactoe-net:
+    driver: bridge
+  
+volumes:
+  game-data:

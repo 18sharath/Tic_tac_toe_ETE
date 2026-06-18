@@ -12,12 +12,46 @@ import (
 // baseURL helps to connects with the backend.
 var baseURL string
 
+// BotServiceConfig represents the response from /bot-services endpoint.
+type BotServiceConfig struct {
+	Services []BotService `json:"services"`
+}
+
+// GetBotServices fetches the list of available bot services from the server.
+func GetBotServices() ([]BotService, error) {
+	u, err := url.JoinPath(baseURL, "bot-services")
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := http.Get(u)
+
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if cerr := resp.Body.Close(); cerr != nil && err != nil {
+			err = cerr
+		}
+	}()
+
+	var config BotServiceConfig
+
+	if err := json.NewDecoder(resp.Body).Decode(&config); err != nil {
+		return nil, err
+	}
+
+	return config.Services, nil
+}
+
 // CreateGameRequest represents the playload required to create a new game.
 type CreateGameRequest struct {
-	Mode        int `json:"mode"`
-	DifficultyX int `json:"difficultyX"`
-	DifficultyO int `json:"difficultyO"`
-	BoardSize   int `json:"boardSize"`
+	Mode           int    `json:"mode"`
+	DifficultyX    int    `json:"difficultyX"`
+	DifficultyO    int    `json:"difficultyO"`
+	BoardSize      int    `json:"boardSize"`
+	BotServiceURLX string `json:"botServiceUrlX,omitempty"`
+	BotServiceURLO string `json:"botServiceUrlO,omitempty"`
 }
 
 // Game represents the state of the single game instance.
@@ -30,14 +64,15 @@ type Game struct {
 }
 
 // CreateGame send the http request to create a new game.
-func CreateGame(mode int, diffX, diffO, size int) (g *Game, err error) {
+func CreateGame(mode int, diffX, diffO, size int, botURLX, botURLO string) (g *Game, err error) {
 	reqBody := CreateGameRequest{
-		Mode:        mode,
-		DifficultyX: diffX,
-		DifficultyO: diffO,
-		BoardSize:   size,
+		Mode:           mode,
+		DifficultyX:    diffX,
+		DifficultyO:    diffO,
+		BoardSize:      size,
+		BotServiceURLX: botURLX,
+		BotServiceURLO: botURLO,
 	}
-
 
 	jsonData, err := json.Marshal(reqBody)
 	if err != nil {

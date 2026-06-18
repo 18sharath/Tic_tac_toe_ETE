@@ -30,13 +30,13 @@ func (f *FileStore) Create(g *game.Game) (err error) {
 		return err
 	}
 
-	defer func(){
-		if cerr:=file.Close();cerr!=nil && err==nil{
-			err=cerr
+	defer func() {
+		if cerr := file.Close(); cerr != nil && err == nil {
+			err = cerr
 		}
 	}()
 
-	err=json.NewEncoder(file).Encode(g)
+	err = json.NewEncoder(file).Encode(g)
 
 	return err
 }

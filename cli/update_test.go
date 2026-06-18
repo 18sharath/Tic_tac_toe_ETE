@@ -568,3 +568,346 @@ func TestHandleBotMsgStop(t *testing.T) {
 	assert.NotNil(t, newModel)
 	assert.Nil(t, cmd)
 }
+
+func TestSetupBotURLScreen(t *testing.T) {
+    server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+        resp := BotServiceConfig{Services: []BotService{{Name: "Bot1", URL: "http://bot1"}}}
+        _ = json.NewEncoder(w).Encode(resp)
+    }))
+    defer server.Close()
+    baseURL = server.URL
+
+    m := model{}
+    updated := m.setupBotURLScreen(inputBotURLX)
+
+    assert.Equal(t, botURLScreen, updated.screen)
+    assert.Equal(t, inputBotURLX, updated.inputMode)
+    assert.Equal(t, 0, updated.cursor)
+    assert.Len(t, updated.botServices, 1)
+}
+
+func TestSetupBotURLScreenWithExistingServices(t *testing.T) {
+    m := model{botServices: []BotService{{Name: "Existing", URL: "http://existing"}}}
+    updated := m.setupBotURLScreen(inputBotURLO)
+
+    assert.Equal(t, botURLScreen, updated.screen)
+    assert.Len(t, updated.botServices, 1)
+}
+
+func TestHandleBotURLSelectionFromList(t *testing.T) {
+    startGameServer(t)
+    m := model{
+        mode:        int(ModeHumanVsBot),
+        inputMode:   inputBotURLO,
+        cursor:      0,
+        botServices: []BotService{{Name: "Bot1", URL: "http://bot1"}},
+        BoardSize:   3,
+        difficultyO: 4,
+    }
+
+    newModel, _ := m.handleBotURLSelection()
+    updated := newModel.(model)
+
+    assert.Equal(t, "http://bot1", updated.botServiceO)
+    assert.Equal(t, gameScreen, updated.screen)
+}
+
+func TestHandleBotURLSelectionCustomURL(t *testing.T) {
+    startGameServer(t)
+    m := model{
+        mode:        int(ModeHumanVsBot),
+        inputMode:   inputBotURLO,
+        cursor:      1,
+        botServices: []BotService{{Name: "Bot1", URL: "http://bot1"}},
+        input:       "http://custom",
+        BoardSize:   3,
+        difficultyO: 4,
+    }
+
+    newModel, _ := m.handleBotURLSelection()
+    updated := newModel.(model)
+
+    assert.Equal(t, "http://custom", updated.botServiceO)
+}
+
+func TestHandleBotURLSelectionEmptyURL(t *testing.T) {
+    m := model{
+        inputMode:   inputBotURLO,
+        cursor:      1,
+        botServices: []BotService{{Name: "Bot1", URL: "http://bot1"}},
+        input:       "",
+    }
+
+    newModel, cmd := m.handleBotURLSelection()
+
+    assert.NotNil(t, newModel)
+    assert.Nil(t, cmd)
+}
+
+func TestHandleBotURLSelectionForX(t *testing.T) {
+    m := model{
+        mode:        int(ModeBotVsBot),
+        inputMode:   inputBotURLX,
+        cursor:      0,
+        botServices: []BotService{{Name: "Bot1", URL: "http://bot1"}},
+    }
+
+    newModel, _ := m.handleBotURLSelection()
+    updated := newModel.(model)
+
+    assert.Equal(t, "http://bot1", updated.botServiceX)
+    assert.Equal(t, difficultyScreen, updated.screen)
+    assert.Equal(t, inputDiffO, updated.inputMode)
+}
+
+func TestHandleBotURLSelectionBotVsBot(t *testing.T) {
+    startGameServer(t)
+    m := model{
+        mode:        int(ModeBotVsBot),
+        inputMode:   inputBotURLO,
+        cursor:      0,
+        botServices: []BotService{{Name: "Bot1", URL: "http://bot1"}},
+        BoardSize:   3,
+        difficultyX: 4,
+        difficultyO: 4,
+    }
+
+    newModel, cmd := m.handleBotURLSelection()
+    updated := newModel.(model)
+
+    assert.Equal(t, gameScreen, updated.screen)
+    assert.NotNil(t, cmd)
+}
+
+func TestHandleBotURLScreenRunes(t *testing.T) {
+    m := model{
+        screen:      botURLScreen,
+        cursor:      1,
+        botServices: []BotService{{Name: "Bot1", URL: "http://bot1"}},
+        input:       "http://",
+    }
+
+    msg := tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("test")}
+    newModel, _ := m.handleBotURLScreen(msg)
+    updated := newModel.(model)
+
+    assert.Equal(t, "http://test", updated.input)
+}
+
+func TestHandleBotURLScreenRunesNotCustom(t *testing.T) {
+    m := model{
+        screen:      botURLScreen,
+        cursor:      0,
+        botServices: []BotService{{Name: "Bot1", URL: "http://bot1"}},
+        input:       "",
+    }
+
+    msg := tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("test")}
+    newModel, _ := m.handleBotURLScreen(msg)
+    updated := newModel.(model)
+
+    assert.Equal(t, "", updated.input)
+}
+
+func TestHandleBotURLScreenBackspace(t *testing.T) {
+    m := model{
+        screen:      botURLScreen,
+        cursor:      1,
+        botServices: []BotService{{Name: "Bot1", URL: "http://bot1"}},
+        input:       "http://test",
+    }
+
+    msg := tea.KeyMsg{Type: tea.KeyBackspace}
+    newModel, _ := m.handleBotURLScreen(msg)
+    updated := newModel.(model)
+
+    assert.Equal(t, "http://tes", updated.input)
+}
+
+func TestHandleBotURLScreenBackspaceEmpty(t *testing.T) {
+    m := model{
+        screen:      botURLScreen,
+        cursor:      1,
+        botServices: []BotService{{Name: "Bot1", URL: "http://bot1"}},
+        input:       "",
+    }
+
+    msg := tea.KeyMsg{Type: tea.KeyBackspace}
+    newModel, _ := m.handleBotURLScreen(msg)
+    updated := newModel.(model)
+
+    assert.Equal(t, "", updated.input)
+}
+
+func TestHandleBotURLScreenEnter(t *testing.T) {
+    startGameServer(t)
+    m := model{
+        screen:      botURLScreen,
+        mode:        int(ModeHumanVsBot),
+        inputMode:   inputBotURLO,
+        cursor:      0,
+        botServices: []BotService{{Name: "Bot1", URL: "http://bot1"}},
+        BoardSize:   3,
+        difficultyO: 4,
+    }
+
+    msg := tea.KeyMsg{Type: tea.KeyEnter}
+    newModel, _ := m.handleBotURLScreen(msg)
+    updated := newModel.(model)
+
+    assert.Equal(t, gameScreen, updated.screen)
+}
+
+func TestHandleBotURLScreenUp(t *testing.T) {
+    m := model{
+        screen:      botURLScreen,
+        cursor:      1,
+        botServices: []BotService{{Name: "Bot1", URL: "http://bot1"}},
+    }
+
+    msg := tea.KeyMsg{Type: tea.KeyUp}
+    newModel, _ := m.handleBotURLScreen(msg)
+    updated := newModel.(model)
+
+    assert.Equal(t, 0, updated.cursor)
+}
+
+func TestHandleBotURLScreenUpAtZero(t *testing.T) {
+    m := model{
+        screen:      botURLScreen,
+        cursor:      0,
+        botServices: []BotService{{Name: "Bot1", URL: "http://bot1"}},
+    }
+
+    msg := tea.KeyMsg{Type: tea.KeyUp}
+    newModel, _ := m.handleBotURLScreen(msg)
+    updated := newModel.(model)
+
+    assert.Equal(t, 0, updated.cursor)
+}
+
+func TestHandleBotURLScreenDown(t *testing.T) {
+    m := model{
+        screen:      botURLScreen,
+        cursor:      0,
+        botServices: []BotService{{Name: "Bot1", URL: "http://bot1"}},
+    }
+
+    msg := tea.KeyMsg{Type: tea.KeyDown}
+    newModel, _ := m.handleBotURLScreen(msg)
+    updated := newModel.(model)
+
+    assert.Equal(t, 1, updated.cursor)
+}
+
+func TestHandleBotURLScreenDownAtMax(t *testing.T) {
+    m := model{
+        screen:      botURLScreen,
+        cursor:      1,
+        botServices: []BotService{{Name: "Bot1", URL: "http://bot1"}},
+    }
+
+    msg := tea.KeyMsg{Type: tea.KeyDown}
+    newModel, _ := m.handleBotURLScreen(msg)
+    updated := newModel.(model)
+
+    assert.Equal(t, 1, updated.cursor)
+}
+
+func TestHandleBotURLScreenBack(t *testing.T) {
+    m := model{
+        screen:      botURLScreen,
+        cursor:      0,
+        botServices: []BotService{{Name: "Bot1", URL: "http://bot1"}},
+    }
+
+    // Test navigation with unknown key type falls through to default
+    msg := tea.KeyMsg{Type: tea.KeyTab}
+    newModel, cmd := m.handleBotURLScreen(msg)
+
+    assert.NotNil(t, newModel)
+    assert.Nil(t, cmd)
+}
+
+func TestHandleKeyMsgBotURLScreen(t *testing.T) {
+    m := model{
+        screen:      botURLScreen,
+        cursor:      1,
+        botServices: []BotService{{Name: "Bot1", URL: "http://bot1"}},
+    }
+
+    msg := tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("x")}
+    newModel, _ := m.handleKeyMsg(msg)
+    updated := newModel.(model)
+
+    assert.Equal(t, "x", updated.input)
+}
+
+func TestHandleEnterBotURLScreen(t *testing.T) {
+    startGameServer(t)
+    m := model{
+        screen:      botURLScreen,
+        mode:        int(ModeHumanVsBot),
+        inputMode:   inputBotURLO,
+        cursor:      0,
+        botServices: []BotService{{Name: "Bot1", URL: "http://bot1"}},
+        BoardSize:   3,
+        difficultyO: 4,
+    }
+
+    newModel, _ := m.handleEnter()
+    updated := newModel.(model)
+
+    assert.Equal(t, gameScreen, updated.screen)
+}
+
+func TestHandleDifficultySelectionService(t *testing.T) {
+    server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+        resp := BotServiceConfig{Services: []BotService{{Name: "Bot1", URL: "http://bot1"}}}
+        _ = json.NewEncoder(w).Encode(resp)
+    }))
+    defer server.Close()
+    baseURL = server.URL
+
+    m := model{mode: int(ModeHumanVsBot), cursor: 3, BoardSize: 3}
+
+    newModel, _ := m.handleDifficultySelection()
+    updated := newModel.(model)
+
+    assert.Equal(t, botURLScreen, updated.screen)
+    assert.Equal(t, inputBotURLO, updated.inputMode)
+}
+
+func TestHandleDifficultySelectionBotVsBotServiceX(t *testing.T) {
+    server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+        resp := BotServiceConfig{Services: []BotService{{Name: "Bot1", URL: "http://bot1"}}}
+        _ = json.NewEncoder(w).Encode(resp)
+    }))
+    defer server.Close()
+    baseURL = server.URL
+
+    m := model{mode: int(ModeBotVsBot), cursor: 3, inputMode: inputDiffX, BoardSize: 3}
+
+    newModel, _ := m.handleDifficultySelection()
+    updated := newModel.(model)
+
+    assert.Equal(t, botURLScreen, updated.screen)
+    assert.Equal(t, inputBotURLX, updated.inputMode)
+}
+
+func TestHandleDifficultySelectionBotVsBotServiceO(t *testing.T) {
+    server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+        resp := BotServiceConfig{Services: []BotService{{Name: "Bot1", URL: "http://bot1"}}}
+        _ = json.NewEncoder(w).Encode(resp)
+    }))
+    defer server.Close()
+    baseURL = server.URL
+
+    m := model{mode: int(ModeBotVsBot), cursor: 3, inputMode: inputDiffO, difficultyX: 1, BoardSize: 3}
+
+    newModel, _ := m.handleDifficultySelection()
+    updated := newModel.(model)
+
+    assert.Equal(t, botURLScreen, updated.screen)
+    assert.Equal(t, inputBotURLO, updated.inputMode)
+}

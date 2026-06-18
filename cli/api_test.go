@@ -34,7 +34,7 @@ func TestCreateGameSuccess(t *testing.T) {
 	defer server.Close()
 
 	baseURL = server.URL
-	game, err := CreateGame(1, 1, 1, 3)
+	game, err := CreateGame(1, 1, 1, 3, "", "")
 
 	assert.NoError(t, err)
 	assert.NotNil(t, game)
@@ -89,7 +89,7 @@ func TestMakeMoveSuccess(t *testing.T) {
 func TestCreateGameHTTPFailure(t *testing.T) {
 	baseURL = testUnreachableURL
 
-	game, err := CreateGame(1, 1, 1, 3)
+	game, err := CreateGame(1, 1, 1, 3, "", "")
 
 	assert.Error(t, err)
 	assert.Nil(t, game)
@@ -98,7 +98,7 @@ func TestCreateGameHTTPFailure(t *testing.T) {
 func TestCreateGameInvalidBaseURL(t *testing.T) {
 	baseURL = testBadURL
 
-	game, err := CreateGame(1, 1, 1, 3)
+	game, err := CreateGame(1, 1, 1, 3, "", "")
 
 	assert.Error(t, err)
 	assert.Nil(t, game)
@@ -111,7 +111,7 @@ func TestCreateGameBadJSON(t *testing.T) {
 	defer server.Close()
 
 	baseURL = server.URL
-	game, err := CreateGame(1, 1, 1, 3)
+	game, err := CreateGame(1, 1, 1, 3, "", "")
 
 	assert.Error(t, err)
 	assert.Nil(t, game)
@@ -177,4 +177,55 @@ func TestMakeMoveBadJSON(t *testing.T) {
 
 	assert.Error(t, err)
 	assert.Nil(t, game)
+}
+
+func TestGetBotServicesSuccess(t *testing.T) {
+    server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        assert.Equal(t, "/bot-services", r.URL.Path)
+        resp := BotServiceConfig{
+            Services: []BotService{
+                {Name: "Test Bot", URL: "http://localhost:8080", Description: "Test"},
+            },
+        }
+        _ = json.NewEncoder(w).Encode(resp)
+    }))
+    defer server.Close()
+
+    baseURL = server.URL
+    services, err := GetBotServices()
+
+    assert.NoError(t, err)
+    assert.Len(t, services, 1)
+    assert.Equal(t, "Test Bot", services[0].Name)
+}
+
+func TestGetBotServicesHTTPFailure(t *testing.T) {
+    baseURL = testUnreachableURL
+
+    services, err := GetBotServices()
+
+    assert.Error(t, err)
+    assert.Nil(t, services)
+}
+
+func TestGetBotServicesInvalidBaseURL(t *testing.T) {
+    baseURL = testBadURL
+
+    services, err := GetBotServices()
+
+    assert.Error(t, err)
+    assert.Nil(t, services)
+}
+
+func TestGetBotServicesBadJSON(t *testing.T) {
+    server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+        _, _ = w.Write([]byte("not json {{{"))
+    }))
+    defer server.Close()
+
+    baseURL = server.URL
+    services, err := GetBotServices()
+
+    assert.Error(t, err)
+    assert.Nil(t, services)
 }
